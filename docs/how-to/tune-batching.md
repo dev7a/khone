@@ -1,0 +1,62 @@
+# Tune Batching And Timeouts
+
+Tune one route at a time and record the workload, target memory, backend delay, `maxWaitMs`,
+`maxBatchSize`, and any adaptive wait settings alongside results.
+
+## Start With Conservative Bounds
+
+- Use `maxWaitMs` between 5 and 25 ms for latency-sensitive routes.
+- Use `maxBatchSize` between 4 and 16 for simple handlers.
+- Keep `maxWaitMs` below client timeouts.
+- Set `timeoutMs` per route and `DefaultTimeoutMs` as the fallback.
+
+```yaml
+paths:
+  /v1/search:
+    get:
+      x-target-lambda: arn:aws:lambda:us-east-1:123456789012:function:search
+      x-khone:
+        maxWaitMs: 10
+        maxBatchSize: 8
+        invokeMode: buffered
+        timeoutMs: 900
+```
+
+## Isolate Tenants Or Auth Contexts
+
+Use `x-khone.key` when requests must not be co-batched together.
+
+```yaml
+x-khone:
+  maxWaitMs: 20
+  maxBatchSize: 4
+  key:
+    - header:x-tenant-id
+```
+
+Batch keys are derived from the original request headers. Header forwarding controls what target
+functions receive, not how isolation keys are read.
+
+## Use Duration-Based Waits For Slow Or Variable Targets
+
+`durationWait` uses periodically refreshed single-request probes, smooths the observed target
+duration, and derives the wait window from that smoothed value.
+
+```yaml
+x-khone:
+  maxWaitMs: 2000
+  maxBatchSize: 16
+  durationWait:
+    fraction: 0.5
+    probeIntervalMs: 5000
+    smoothingSamples: 5
+    warmupProbes: 1
+```
+
+The gateway starts from the minimum wait path and updates duration-derived waits after probe
+samples are available.
+
+## Watch Payload Size
+
+`MaxInvokePayloadBytes` defaults to 6 MiB. Keep request bodies small enough for batch payloads to
+fit the Lambda invoke limit. A single request that cannot fit fails.

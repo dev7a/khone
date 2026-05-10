@@ -1,0 +1,13 @@
+metric_name,timestamp,metric_value,status,error,extra_tags
+http_reqs,1700100001,1,200,,endpoint=standard
+http_req_duration,1700100001,90,200,,endpoint=standard
+khone_batch_size,1700100001,1,,,endpoint=standard
+http_reqs,1700100002,1,200,,endpoint=standard
+http_req_duration,1700100002,100,200,,endpoint=standard
+khone_batch_size,1700100002,1,,,endpoint=standard
+http_reqs,1700100001,1,200,,endpoint=mux
+http_req_duration,1700100001,110,200,,endpoint=mux
+khone_batch_size,1700100001,1,,,endpoint=mux
+http_reqs,1700100002,1,200,,endpoint=mux
+http_req_duration,1700100002,120,200,,endpoint=mux
+khone_batch_size,1700100002,1,,,endpoint=mux

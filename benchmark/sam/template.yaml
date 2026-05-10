@@ -1,0 +1,426 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform:
+  - AWS::Serverless-2016-10-31
+  - KhoneGateway
+Description: Khone benchmark stack (LMI gateway + Mode A Node + direct HTTP API baseline)
+Metadata:
+  cfn-lint:
+    config:
+      ignore_checks:
+        # Custom macro-expanded resource, validated during deploy not via cfn-lint.
+        - E3006
+
+Parameters:
+  KhoneLayerArm64Arn:
+    Type: String
+    Description: ARN of the shared arm64 Mode A runtime API proxy layer (for example from bootstrap output KhoneLayerArm64Arn).
+  GatewayCapacityProviderArn:
+    Type: String
+    AllowedPattern: '^arn:aws[a-zA-Z-]*:lambda:[a-z0-9-]+:[0-9]{12}:capacity-provider:[a-zA-Z0-9-_]+$'
+    ConstraintDescription: Must be a Lambda capacity provider ARN in capacity-provider:<name> form.
+    Description: ARN of an existing Lambda Managed Instances capacity provider for the gateway function.
+  BenchmarkBackendBaseDelayMs:
+    Type: Number
+    Default: 80
+    MinValue: 0
+    MaxValue: 10000
+    Description: Base delay injected by the backend Lambda workload (milliseconds).
+  BenchmarkBackendJitterMs:
+    Type: Number
+    Default: 80
+    MinValue: 0
+    MaxValue: 10000
+    Description: Additional random jitter added by the backend Lambda workload (milliseconds).
+  BenchmarkBackendPoints:
+    Type: Number
+    Default: 48
+    MinValue: 8
+    MaxValue: 512
+    Description: Number of generated points per backend item response.
+  BenchmarkBackendTimeoutMs:
+    Type: Number
+    Default: 7000
+    MinValue: 100
+    MaxValue: 90000
+    Description: Per-request timeout used by benchmark handlers when calling the backend Lambda URL.
+  BenchmarkHandlerMemorySize:
+    Type: Number
+    Default: 256
+    MinValue: 128
+    MaxValue: 10240
+    Description: Memory size in MB for benchmark handler Lambdas (mux, pct, and standard).
+  KhoneMaxConcurrency:
+    Type: Number
+    Default: 16
+    MinValue: 1
+    MaxValue: 1024
+    Description: Node multi-concurrent runtime limit and gateway max batch size for batched benchmark endpoints.
+  EmfMetricsEnabled:
+    Type: String
+    Default: "false"
+    AllowedValues:
+      - "true"
+      - "false"
+    Description: Enables gateway EMF metrics emission.
+  ObservabilityEnabled:
+    Type: String
+    Default: "false"
+    AllowedValues:
+      - "true"
+      - "false"
+    Description: Enables gateway OTEL traces export.
+  OtelTracesEndpoint:
+    Type: String
+    Default: ""
+    Description: OTLP traces endpoint URL (used as-is, not modified by the gateway). Required when ObservabilityEnabled is true.
+  OtelTracesProtocol:
+    Type: String
+    Default: http/protobuf
+    AllowedValues:
+      - http/protobuf
+      - grpc
+    Description: OTLP protocol to use for exporting traces.
+
+Conditions:
+  EmfMetricsEnabledCondition: !Equals [!Ref EmfMetricsEnabled, "true"]
+  ObservabilityEnabledCondition: !Equals [!Ref ObservabilityEnabled, "true"]
+
+Globals:
+  Function:
+    Runtime: nodejs24.x
+    Handler: app.handler
+    Timeout: 90
+    MemorySize: 256
+    Tracing: Active
+    LoggingConfig:
+      ApplicationLogLevel: INFO
+      LogFormat: JSON
+
+Resources:
+  BackendFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: lambda/backend/
+      FunctionName: !Sub '${AWS::StackName}-backend'
+      Description: Benchmark backend workload returning deterministic sparkline-like point arrays.
+      Architectures:
+        - arm64
+      Environment:
+        Variables:
+          BENCHMARK_BACKEND_BASE_DELAY_MS: !Ref BenchmarkBackendBaseDelayMs
+          BENCHMARK_BACKEND_JITTER_MS: !Ref BenchmarkBackendJitterMs
+          BENCHMARK_BACKEND_POINTS: !Ref BenchmarkBackendPoints
+      FunctionUrlConfig:
+        AuthType: NONE
+        Cors:
+          AllowOrigins:
+            - "*"
+          AllowMethods:
+            - GET
+          AllowHeaders:
+            - "*"
+          MaxAge: 300
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        EntryPoints:
+          - app.ts
+        Format: cjs
+        Minify: false
+        Sourcemap: false
+        Target: es2020
+
+  MUXFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: lambda/mode-a-node/
+      FunctionName: !Sub '${AWS::StackName}-mux'
+      Description: Benchmark handler (Mode A, Node) calling backend Lambda URL.
+      Architectures:
+        - arm64
+      MemorySize: !Ref BenchmarkHandlerMemorySize
+      Layers:
+        - !Ref KhoneLayerArm64Arn
+      Environment:
+        Variables:
+          AWS_LAMBDA_EXEC_WRAPPER: /opt/khone/exec-wrapper.sh
+          KHONE_MAX_CONCURRENCY: !Ref KhoneMaxConcurrency
+          BENCHMARK_BACKEND_URL: !GetAtt BackendFunctionUrl.FunctionUrl
+          BENCHMARK_BACKEND_TIMEOUT_MS: !Ref BenchmarkBackendTimeoutMs
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        EntryPoints:
+          - app.ts
+        External:
+          - "@aws-sdk/*"
+        Format: cjs
+        Minify: false
+        Sourcemap: false
+        Target: es2020
+
+  PCTFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: lambda/mode-a-node/
+      FunctionName: !Sub '${AWS::StackName}-pct'
+      Description: Benchmark handler (Mode A, Node) for pct wait policy, calling backend Lambda URL.
+      Architectures:
+        - arm64
+      MemorySize: !Ref BenchmarkHandlerMemorySize
+      Layers:
+        - !Ref KhoneLayerArm64Arn
+      Environment:
+        Variables:
+          AWS_LAMBDA_EXEC_WRAPPER: /opt/khone/exec-wrapper.sh
+          KHONE_MAX_CONCURRENCY: !Ref KhoneMaxConcurrency
+          BENCHMARK_BACKEND_URL: !GetAtt BackendFunctionUrl.FunctionUrl
+          BENCHMARK_BACKEND_TIMEOUT_MS: !Ref BenchmarkBackendTimeoutMs
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        EntryPoints:
+          - app.ts
+        External:
+          - "@aws-sdk/*"
+        Format: cjs
+        Minify: false
+        Sourcemap: false
+        Target: es2020
+
+  DirectHttpApi:
+    Type: AWS::Serverless::HttpApi
+
+  STDFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: lambda/direct-item/
+      FunctionName: !Sub '${AWS::StackName}-std'
+      Description: Benchmark standard baseline handler behind API Gateway HTTP API, calling backend Lambda URL.
+      Architectures:
+        - arm64
+      MemorySize: !Ref BenchmarkHandlerMemorySize
+      Environment:
+        Variables:
+          BENCHMARK_BACKEND_URL: !GetAtt BackendFunctionUrl.FunctionUrl
+          BENCHMARK_BACKEND_TIMEOUT_MS: !Ref BenchmarkBackendTimeoutMs
+      Events:
+        DirectItemRoute:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref DirectHttpApi
+            Path: /std/{id}
+            Method: GET
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        EntryPoints:
+          - app.ts
+        External:
+          - "@aws-sdk/*"
+        Format: cjs
+        Minify: false
+        Sourcemap: false
+        Target: es2020
+
+  # Create function log groups explicitly so metric filters can be attached at deploy time.
+  MUXFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${MUXFunction}"
+      RetentionInDays: 7
+
+  STDFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${STDFunction}"
+      RetentionInDays: 7
+
+  PCTFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${PCTFunction}"
+      RetentionInDays: 7
+
+  # Emit per-minute aggregates from Lambda system logs (JSON platform events).
+  # This is useful for dashboards and for cross-checking the gateway EMF metrics.
+  MUXPlatformReportBilledDurationMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref MUXFunctionLogGroup
+      FilterPattern: '{ $.type = "platform.report" }'
+      MetricTransformations:
+        - MetricNamespace: KhoneBenchmark/LambdaLogs
+          MetricName: MUXBilledDurationMs
+          MetricValue: $.record.metrics.billedDurationMs
+          Unit: Milliseconds
+
+  STDPlatformReportBilledDurationMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref STDFunctionLogGroup
+      FilterPattern: '{ $.type = "platform.report" }'
+      MetricTransformations:
+        - MetricNamespace: KhoneBenchmark/LambdaLogs
+          MetricName: STDBilledDurationMs
+          MetricValue: $.record.metrics.billedDurationMs
+          Unit: Milliseconds
+
+  PCTPlatformReportBilledDurationMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref PCTFunctionLogGroup
+      FilterPattern: '{ $.type = "platform.report" }'
+      MetricTransformations:
+        - MetricNamespace: KhoneBenchmark/LambdaLogs
+          MetricName: PCTBilledDurationMs
+          MetricValue: $.record.metrics.billedDurationMs
+          Unit: Milliseconds
+
+  GatewayService:
+    Type: Khone::Gateway::Service
+    Properties:
+      ConfigPrefix: !Sub 'khone/${AWS::StackName}/gateway/'
+      GatewayConfig:
+        DefaultTimeoutMs: 2000
+      Spec:
+        openapi: 3.0.0
+        info:
+          title: Khone benchmark stack
+          version: "1"
+        paths:
+          /mux/{id}:
+            get:
+              x-target-lambda: !GetAtt MUXFunction.Arn
+              x-khone:
+                maxWaitMs: 100
+                maxBatchSize: !Ref KhoneMaxConcurrency
+                invokeMode: response_stream
+                timeoutMs: 8000
+                profiling: false
+                dynamicWait:
+                  minWaitMs: 1
+                  targetRps: 10
+                  steepness: 0.5
+                  samplingIntervalMs: 100
+                  smoothingSamples: 5
+          /pct/{id}:
+            get:
+              x-target-lambda: !GetAtt PCTFunction.Arn
+              x-khone:
+                maxWaitMs: 2000
+                maxBatchSize: !Ref KhoneMaxConcurrency
+                invokeMode: response_stream
+                timeoutMs: 8000
+                profiling: false
+                durationWait:
+                  fraction: 0.5
+                  minWaitMs: 0
+                  probeIntervalMs: 5000
+                  probeJitterMs: 1000
+                  smoothingSamples: 10
+                  warmupProbes: 3
+
+  GatewayFunction:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: rust-cargolambda
+    Properties:
+      CodeUri: ../../gateway
+      Handler: bootstrap
+      Runtime: provided.al2023
+      PackageType: Zip
+      FunctionName: !Sub '${AWS::StackName}-gateway'
+      Description: Khone benchmark router running on Lambda Managed Instances.
+      Architectures:
+        - arm64
+      MemorySize: 2048
+      Timeout: 90
+      CapacityProviderConfig:
+        Arn: !Ref GatewayCapacityProviderArn
+        ExecutionEnvironmentMemoryGiBPerVCpu: 2.0
+        PerExecutionEnvironmentMaxConcurrency: 64
+      FunctionScalingConfig:
+        MinExecutionEnvironments: 4
+        MaxExecutionEnvironments: 4
+      FunctionUrlConfig:
+        AuthType: NONE
+        InvokeMode: RESPONSE_STREAM
+      Environment:
+        Variables:
+          RUST_LOG: info
+          KHONE_CONFIG_URI: !GetAtt GatewayService.ConfigS3Uri
+          KHONE_DEBUG_RESPONSE_HEADERS: "1"
+          KHONE_EMF_METRICS: !If [EmfMetricsEnabledCondition, "1", !Ref AWS::NoValue]
+          KHONE_EMF_NAMESPACE: !If [EmfMetricsEnabledCondition, KhoneBenchmark, !Ref AWS::NoValue]
+          KHONE_EMF_HIGH_RES: !If [EmfMetricsEnabledCondition, "1", !Ref AWS::NoValue]
+          KHONE_OBSERVABILITY_VENDOR: !If [ObservabilityEnabledCondition, AWSXRAY, !Ref AWS::NoValue]
+          OTEL_PROPAGATORS: !If [ObservabilityEnabledCondition, "xray,tracecontext,baggage", !Ref AWS::NoValue]
+          OTEL_METRICS_EXPORTER: !If [ObservabilityEnabledCondition, "none", !Ref AWS::NoValue]
+          OTEL_SERVICE_NAME: !If [ObservabilityEnabledCondition, !Sub '${AWS::StackName}-gateway', !Ref AWS::NoValue]
+          OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: !If [ObservabilityEnabledCondition, !Ref OtelTracesEndpoint, !Ref AWS::NoValue]
+          OTEL_EXPORTER_OTLP_TRACES_PROTOCOL: !If [ObservabilityEnabledCondition, !Ref OtelTracesProtocol, !Ref AWS::NoValue]
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - Statement:
+            - Sid: ReadGatewayConfig
+              Effect: Allow
+              Action: s3:GetObject
+              Resource: !Sub
+                - 'arn:${AWS::Partition}:s3:::${Bucket}/${Prefix}*'
+                - Bucket: !GetAtt GatewayService.BucketName
+                  Prefix: !GetAtt GatewayService.Prefix
+            - Sid: InvokeTargetLambdas
+              Effect: Allow
+              Action:
+                - lambda:InvokeFunction
+                - lambda:InvokeWithResponseStream
+              Resource:
+                - !GetAtt MUXFunction.Arn
+                - !GetAtt PCTFunction.Arn
+
+Outputs:
+  BenchmarkBackendUrl:
+    Value: !GetAtt BackendFunctionUrl.FunctionUrl
+
+  BenchmarkEndpointsCsv:
+    Value: "mux,pct,standard"
+
+  BenchmarkTargetsJson:
+    Value: !Sub '[{"name":"mux","url":"${GatewayFunctionUrl.FunctionUrl}mux"},{"name":"pct","url":"${GatewayFunctionUrl.FunctionUrl}pct"},{"name":"standard","url":"https://${DirectHttpApi}.execute-api.${AWS::Region}.amazonaws.com/std"}]'
+
+  ModeANodeFunctionArn:
+    Value: !GetAtt MUXFunction.Arn
+
+  DirectItemFunctionArn:
+    Value: !GetAtt STDFunction.Arn
+
+  MUXFunctionArn:
+    Value: !GetAtt MUXFunction.Arn
+
+  PCTFunctionArn:
+    Value: !GetAtt PCTFunction.Arn
+
+  STDFunctionArn:
+    Value: !GetAtt STDFunction.Arn
+
+  GatewayFunctionUrl:
+    Value: !GetAtt GatewayFunctionUrl.FunctionUrl
+
+  GatewayServiceConfigS3Uri:
+    Value: !GetAtt GatewayService.ConfigS3Uri
+
+  ModeANodeDynamicItemUrl:
+    Value: !Sub "${GatewayFunctionUrl.FunctionUrl}mux"
+
+  MuxUrl:
+    Value: !Sub "${GatewayFunctionUrl.FunctionUrl}mux"
+
+  PctUrl:
+    Value: !Sub "${GatewayFunctionUrl.FunctionUrl}pct"
+
+  DirectItemUrl:
+    Value: !Sub "https://${DirectHttpApi}.execute-api.${AWS::Region}.amazonaws.com/std"
+
+  StandardUrl:
+    Value: !Sub "https://${DirectHttpApi}.execute-api.${AWS::Region}.amazonaws.com/std"

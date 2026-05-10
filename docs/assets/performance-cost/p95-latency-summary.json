@@ -1,0 +1,18 @@
+{
+  "title": "P95 Latency",
+  "subtitle": "Public benchmark snapshot; lower is better",
+  "x_label": "P95 latency (ms)",
+  "value_format": "{:.0f} ms",
+  "x_max": 520,
+  "categories": ["mux", "pct", "standard"],
+  "series": [
+    {
+      "label": "Low traffic (1/10/50 rps)",
+      "values": [274.86, 460.06, 197.97]
+    },
+    {
+      "label": "High traffic (50/100/150 rps)",
+      "values": [302.03, 469.53, 202.2]
+    }
+  ]
+}

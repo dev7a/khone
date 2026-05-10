@@ -1,0 +1,36 @@
+/.DS_Store
+/.idea
+/.vscode
+
+# Rust
+/target
+**/target
+
+# Node
+node_modules
+**/node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+/lambda-kit/adapter-node/dist/
+
+# Layer build artifacts
+/lambda-kit/layer-proxy/dist/
+
+# Python
+__pycache__/
+*.py[cod]
+
+# AWS SAM
+.aws-sam/
+
+# Benchmark output
+benchmark-results/
+
+# Codex session history
+/.waylog/
+/.waylog-journal/
+
+# Local deploy helpers
+.khone_gateway_image_identifier

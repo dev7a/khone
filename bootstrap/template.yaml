@@ -1,0 +1,148 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: Khone bootstrap (shared config bucket + macro + config publisher custom resource)
+
+Parameters:
+  UseExistingBucket:
+    Type: String
+    Default: ""
+    Description: Optional existing S3 bucket name to use for gateway config/spec objects. Leave empty to create a bucket named khone-config-<account>-<region>.
+
+Conditions:
+  CreateConfigBucket: !Equals [!Ref UseExistingBucket, ""]
+
+Resources:
+  ConfigBucket:
+    Type: AWS::S3::Bucket
+    Condition: CreateConfigBucket
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      BucketName: !Sub "khone-config-${AWS::AccountId}-${AWS::Region}"
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+
+  ConfigBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Condition: CreateConfigBucket
+    Properties:
+      Bucket: !Ref ConfigBucket
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: DenyInsecureTransport
+            Effect: Deny
+            Principal: "*"
+            Action: "s3:*"
+            Resource:
+              - !Sub "arn:aws:s3:::${ConfigBucket}"
+              - !Sub "arn:aws:s3:::${ConfigBucket}/*"
+            Condition:
+              Bool:
+                aws:SecureTransport: false
+
+  ConfigPublisherFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: python3.13
+      Handler: app.handler
+      CodeUri: config_publisher/
+      Description: CloudFormation custom resource that uploads Khone gateway config manifests to S3.
+      MemorySize: 256
+      Timeout: 30
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - Statement:
+            - Sid: WriteConfigObjects
+              Effect: Allow
+              Action:
+                - s3:PutObject
+                - s3:PutObjectTagging
+                - s3:DeleteObject
+                - s3:GetObject
+              Resource:
+                - !If
+                  - CreateConfigBucket
+                  - !Sub "arn:aws:s3:::${ConfigBucket}/*"
+                  - !Sub "arn:aws:s3:::${UseExistingBucket}/*"
+      Environment:
+        Variables:
+          KHONE_DEFAULT_BUCKET: !If [CreateConfigBucket, !Ref ConfigBucket, !Ref UseExistingBucket]
+
+  KhoneRuntimeApiProxyLayerArm64:
+    Type: AWS::Serverless::LayerVersion
+    Metadata:
+      BuildMethod: makefile
+      BuildArchitecture: arm64
+    Properties:
+      RetentionPolicy: Retain
+      LayerName: !Sub "${AWS::StackName}-khone-runtime-api-proxy-arm64"
+      ContentUri: layer-proxy
+      CompatibleArchitectures:
+        - arm64
+
+  KhoneRuntimeApiProxyLayerAmd64:
+    Type: AWS::Serverless::LayerVersion
+    Metadata:
+      BuildMethod: makefile
+      BuildArchitecture: x86_64
+    Properties:
+      RetentionPolicy: Retain
+      LayerName: !Sub "${AWS::StackName}-khone-runtime-api-proxy-amd64"
+      ContentUri: layer-proxy
+      CompatibleArchitectures:
+        - x86_64
+
+  GatewayMacroFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: python3.13
+      Handler: app.handler
+      CodeUri: gateway_macro/
+      Description: CloudFormation macro that expands Khone::Gateway::Service into a config publisher custom resource.
+      MemorySize: 256
+      Timeout: 30
+      Policies:
+        - AWSLambdaBasicExecutionRole
+
+  GatewayMacro:
+    Type: AWS::CloudFormation::Macro
+    Properties:
+      Name: KhoneGateway
+      FunctionName: !GetAtt GatewayMacroFunction.Arn
+
+Outputs:
+  ConfigBucketName:
+    Description: S3 bucket name where gateway config manifests are stored.
+    Value: !If [CreateConfigBucket, !Ref ConfigBucket, !Ref UseExistingBucket]
+    Export:
+      Name: KhoneConfigBucketName
+
+  ConfigPublisherServiceToken:
+    Description: Service token (Lambda ARN) for the Custom::KhoneConfigPublisher resource.
+    Value: !GetAtt ConfigPublisherFunction.Arn
+    Export:
+      Name: KhoneConfigPublisherServiceToken
+
+  GatewayMacroName:
+    Description: CloudFormation macro name to add to the Transform section.
+    Value: KhoneGateway
+
+  LayerArm64Arn:
+    Description: ARN of the arm64 runtime API proxy layer.
+    Value: !Ref KhoneRuntimeApiProxyLayerArm64
+    Export:
+      Name: KhoneLayerArm64Arn
+
+  LayerAmd64Arn:
+    Description: ARN of the amd64 runtime API proxy layer.
+    Value: !Ref KhoneRuntimeApiProxyLayerAmd64
+    Export:
+      Name: KhoneLayerAmd64Arn

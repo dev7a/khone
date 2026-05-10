@@ -1,0 +1,7 @@
+[workspace]
+members = [
+  "gateway",
+  "lambda-kit/adapter-rust",
+  "bootstrap/layer-proxy",
+]
+resolver = "2"

@@ -1,0 +1,30 @@
+{
+  "name": "khone-lambda-adapter",
+  "version": "0.1.0",
+  "description": "Batch adapter for Khone",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "type": "commonjs",
+  "exports": {
+    ".": {
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "index.js"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "npm run build && node --test",
+    "prepare": "npm run build",
+    "prepack": "npm run build"
+  },
+  "license": "UNLICENSED",
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.4.0"
+  }
+}

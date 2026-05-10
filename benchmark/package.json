@@ -1,0 +1,30 @@
+{
+  "name": "khone-benchmark-cli",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "CLI for running benchmark load tests and generating static report charts",
+  "scripts": {
+    "benchviz": "tsx src/benchviz.ts",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "npm run typecheck && node --import tsx --test 'test/**/*.test.ts'"
+  },
+  "dependencies": {
+    "@aws-sdk/client-cloudformation": "^3.918.0",
+    "@aws-sdk/client-dynamodb": "^3.918.0",
+    "@aws-sdk/client-lambda": "^3.1044.0",
+    "@aws-sdk/lib-dynamodb": "^3.918.0",
+    "@resvg/resvg-js": "^2.6.2",
+    "commander": "^14.0.1",
+    "csv-parse": "^6.1.0",
+    "echarts": "^6.0.0"
+  },
+  "overrides": {
+    "fast-xml-builder": "^1.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.6.0",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3"
+  }
+}

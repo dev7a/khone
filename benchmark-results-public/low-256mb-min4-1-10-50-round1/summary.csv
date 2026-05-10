@@ -1,0 +1,4 @@
+endpoint,requests,errors,errors_4xx,errors_5xx,errors_429,error_rate,ok_count,avg,min,max,p50,p90,p95,p99,batch_count,batch_avg,batch_min,batch_max,batch_p50,batch_p90,batch_p95,batch_p99,est_lambda_invocations,est_invocations_per_request,est_effective_batch_size,est_cost_pct_of_direct
+mux,10950,0,0,0,0,0,10950,209.19,131.03,1456.9,206.16,257.89,276.63,304.65,10950,1.35,1,5,1,2,3,4,9362,0.854977,1.169622,85.4977
+pct,10950,0,0,0,0,0,10950,338.52,132.43,1697.14,360.04,444.17,458.42,490.16,10950,3,1,9,3,5,6,7,5082,0.46411,2.154664,46.411
+standard,10950,0,0,0,0,0,10950,161.44,110.89,1263.46,159.75,193.27,198.08,207.24,10950,1,1,1,1,1,1,1,10950,1,1,100
