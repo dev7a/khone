@@ -3,10 +3,11 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "predev": "fumadocs-mdx",
+    "predev": "node scripts/sync-public-doc-assets.mjs && fumadocs-mdx",
     "dev": "next dev",
-    "prebuild": "fumadocs-mdx",
-    "build": "next build"
+    "prebuild": "node scripts/sync-public-doc-assets.mjs && fumadocs-mdx",
+    "build": "next build",
+    "postbuild": "node scripts/check-static-links.mjs"
   },
   "dependencies": {
     "fumadocs-core": "16.8.9",
