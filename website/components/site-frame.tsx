@@ -90,7 +90,7 @@ export function SiteFooter() {
           <h5>Project</h5>
           <Link href="/docs/">Documentation</Link>
           <Link href="https://github.com/dev7a/khone">GitHub</Link>
-          <Link href="/docs/explanation/project-scope/">Changelog</Link>
+          <Link href="/docs/explanation/project-scope/">Project scope</Link>
         </div>
         <div className="col">
           <h5>Reference</h5>

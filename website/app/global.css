@@ -72,16 +72,16 @@ html {
 body {
   min-height: 100vh;
   margin: 0;
+  padding: 0;
   overflow-x: hidden;
-  background:
-    linear-gradient(to right, color-mix(in oklab, var(--line) 62%, transparent) 1px, transparent 1px),
-    linear-gradient(to bottom, color-mix(in oklab, var(--line) 62%, transparent) 1px, transparent 1px),
-    linear-gradient(180deg, color-mix(in oklab, var(--accent-soft) 55%, transparent), transparent 380px),
-    var(--bg);
-  background-size: 72px 72px, 72px 72px, auto, auto;
+  background: var(--bg);
   color: var(--fg);
-  font-family: Geist, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: var(--font-sans);
+  font-feature-settings: "ss01", "cv11";
   letter-spacing: 0;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 button,
@@ -880,22 +880,6 @@ samp {
   .perf-table strong:last-child {
     border-bottom: 0;
   }
-}
-
-html,
-body {
-  margin: 0;
-  padding: 0;
-}
-
-body {
-  background: var(--bg);
-  color: var(--fg);
-  font-family: var(--font-sans);
-  font-feature-settings: "ss01", "cv11";
-  line-height: 1.55;
-  -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
 }
 
 a:hover {

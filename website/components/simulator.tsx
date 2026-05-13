@@ -94,7 +94,7 @@ export function BatchingSimulator() {
           dot.x = funnelX + (Math.random() - 0.5) * 2;
           dot.y = cy + (Math.random() - 0.5) * 14;
         } else if (dot.phase === 'firing') {
-          const t = Math.min(1, (now - (dot.fireStart ?? now)) / 280);
+          const t = Math.max(0, Math.min(1, (now - (dot.fireStart ?? now)) / 280));
           dot.x = funnelX + (targetX - funnelX) * t;
           dot.y = cy;
           if (t >= 1) dot.phase = 'done';
