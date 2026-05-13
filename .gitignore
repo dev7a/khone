@@ -17,6 +17,8 @@ pnpm-debug.log*
 /website/.next/
 /website/.source/
 /website/out/
+/website/public/docs/assets/
+/website/public/docs/benchmark-results-public/
 /website/tsconfig.tsbuildinfo
 
 # Layer build artifacts

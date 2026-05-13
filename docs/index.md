@@ -27,7 +27,7 @@ reports.
 
 ## Start Here
 
-- [Project scope](explanation/project-scope.md): understand what this branch does and does not
+- [Project scope](explanation/project-scope.md): understand what this project does and does not
   provide.
 - [Performance and cost](explanation/performance-and-cost.md): read the benchmark outcome,
   caveats, and public report links.
@@ -40,7 +40,7 @@ reports.
 
 ## Reviewer Path
 
-Read these pages in order to understand the scope of the current branch:
+Read these pages in order to understand the scope of the service:
 
 1. [Project scope](explanation/project-scope.md)
 2. [Architecture](explanation/architecture.md)
