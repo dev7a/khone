@@ -1,47 +1,60 @@
 @import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 @import 'fumadocs-ui/style.css';
 
-:root {
-  color-scheme: light;
-  --bg: #f7f2e7;
-  --bg-1: #fffaf1;
-  --bg-2: #ece2d1;
-  --bg-3: #ded0bb;
-  --line: #dacbb5;
-  --line-2: #c1ad91;
-  --fg: #231f19;
-  --fg-1: #5b5246;
-  --fg-2: #817464;
-  --fg-3: #a0917d;
-  --accent: #cf8f2e;
-  --accent-2: #f2b94b;
-  --accent-soft: #f5deb3;
-  --green: #5f9d78;
-  --blue: #6187ba;
+:root,
+.dark {
+  color-scheme: dark;
+  --bg: #0c0b0a;
+  --bg-1: #131210;
+  --bg-2: #1a1815;
+  --bg-3: #241f19;
+  --line: #2a2622;
+  --line-2: #3a342e;
+  --fg: #ece8df;
+  --fg-1: #c8c3b8;
+  --fg-2: #8a857a;
+  --fg-3: #5d584f;
+  --accent-h: 70;
+  --accent: oklch(0.78 0.13 var(--accent-h));
+  --accent-2: oklch(0.65 0.13 var(--accent-h));
+  --accent-bg: oklch(0.78 0.13 var(--accent-h) / 0.12);
+  --accent-soft: var(--accent-bg);
+  --good: oklch(0.75 0.13 145);
+  --green: #81c39c;
+  --blue: #85a9df;
+  --max: 1200px;
+  --pad: clamp(20px, 4vw, 56px);
   --radius: 8px;
-  --shadow: 0 18px 60px rgba(60, 43, 19, 0.13);
+  --r-sm: 4px;
+  --r: 8px;
+  --r-lg: 14px;
+  --font-sans: "Geist", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  --font-mono: "JetBrains Mono", "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --t-fast: 120ms cubic-bezier(.2, .8, .2, 1);
+  --shadow: 0 22px 72px rgba(0, 0, 0, 0.4);
   --background: var(--bg);
   --foreground: var(--fg);
 }
 
-.dark {
-  color-scheme: dark;
-  --bg: #0c0b09;
-  --bg-1: #13110e;
-  --bg-2: #1b1814;
-  --bg-3: #241f19;
-  --line: #2d271f;
-  --line-2: #42382d;
-  --fg: #eee7da;
-  --fg-1: #c9bdab;
-  --fg-2: #988b79;
-  --fg-3: #706454;
-  --accent: #e5a541;
-  --accent-2: #f4c66c;
-  --accent-soft: rgba(229, 165, 65, 0.16);
-  --green: #81c39c;
-  --blue: #85a9df;
-  --shadow: 0 22px 72px rgba(0, 0, 0, 0.4);
+[data-theme="light"] {
+  color-scheme: light;
+  --bg: #faf7f0;
+  --bg-1: #f3efe6;
+  --bg-2: #ebe6d9;
+  --bg-3: #ded0bb;
+  --line: #ddd6c4;
+  --line-2: #c8c0ac;
+  --fg: #1a1815;
+  --fg-1: #3a352e;
+  --fg-2: #6c665a;
+  --fg-3: #8f8a7d;
+  --accent: oklch(0.62 0.13 var(--accent-h));
+  --accent-2: oklch(0.5 0.13 var(--accent-h));
+  --accent-bg: oklch(0.62 0.13 var(--accent-h) / 0.1);
+  --accent-soft: var(--accent-bg);
+  --green: #5f9d78;
+  --blue: #6187ba;
+  --shadow: 0 18px 60px rgba(60, 43, 19, 0.13);
   --background: var(--bg);
   --foreground: var(--fg);
 }
@@ -1317,52 +1330,6 @@ samp {
   .perf-table strong:last-child {
     border-bottom: 0;
   }
-}
-
-/* Mockup fidelity overrides: copied structurally from the supplied design. */
-:root,
-.dark {
-  color-scheme: dark;
-  --bg: #0c0b0a;
-  --bg-1: #131210;
-  --bg-2: #1a1815;
-  --line: #2a2622;
-  --line-2: #3a342e;
-  --fg: #ece8df;
-  --fg-1: #c8c3b8;
-  --fg-2: #8a857a;
-  --fg-3: #5d584f;
-  --accent-h: 70;
-  --accent: oklch(0.78 0.13 var(--accent-h));
-  --accent-2: oklch(0.65 0.13 var(--accent-h));
-  --accent-bg: oklch(0.78 0.13 var(--accent-h) / 0.12);
-  --good: oklch(0.75 0.13 145);
-  --max: 1200px;
-  --pad: clamp(20px, 4vw, 56px);
-  --r-sm: 4px;
-  --r: 8px;
-  --r-lg: 14px;
-  --font-sans: "Geist", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
-  --font-mono: "JetBrains Mono", "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  --t-fast: 120ms cubic-bezier(.2, .8, .2, 1);
-  --background: var(--bg);
-  --foreground: var(--fg);
-}
-
-[data-theme="light"] {
-  color-scheme: light;
-  --bg: #faf7f0;
-  --bg-1: #f3efe6;
-  --bg-2: #ebe6d9;
-  --line: #ddd6c4;
-  --line-2: #c8c0ac;
-  --fg: #1a1815;
-  --fg-1: #3a352e;
-  --fg-2: #6c665a;
-  --fg-3: #8f8a7d;
-  --accent: oklch(0.62 0.13 var(--accent-h));
-  --accent-2: oklch(0.5 0.13 var(--accent-h));
-  --accent-bg: oklch(0.62 0.13 var(--accent-h) / 0.1);
 }
 
 html,
