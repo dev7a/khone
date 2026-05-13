@@ -2,7 +2,7 @@
 
 Khone is a Lambda gateway for stateful request batching. It sits in front of Lambda target functions, keeps short-lived batching state in memory, and forwards grouped requests to handlers that understand the Khone batch protocol.
 
-The current branch is specifically the Lambda Managed Instances (LMI) migration. The gateway is deployed as a Rust Lambda function behind a Lambda Function URL, and the CloudFormation macro is reduced to a config publisher that stores the gateway spec in S3.
+This project currently focuses on the Lambda Managed Instances (LMI) deployment model. The gateway is deployed as a Rust Lambda function behind a Lambda Function URL, and the CloudFormation macro is reduced to a config publisher that stores the gateway spec in S3.
 
 ## What This Project Is
 
@@ -40,4 +40,4 @@ The practical consequence is that benchmarks should separate first-round scale b
 
 ## Maturity
 
-This is a greenfield LMI migration path. The public docs describe the intended product surface for this branch, not a backward-compatible contract with the earlier App Runner implementation. App Runner details remain only where they explain migration context or removed properties.
+This is a greenfield LMI migration path. The public docs describe the intended product surface for this service, not a backward-compatible contract with the earlier App Runner implementation. App Runner details remain only where they explain migration context or removed properties.
