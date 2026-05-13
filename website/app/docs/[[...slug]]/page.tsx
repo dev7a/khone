@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import type { ReactNode } from 'react';
 import { SiteFooter, SiteHeader } from '@/components/site-frame';
 import { source } from '@/lib/source';
 
@@ -92,7 +93,7 @@ function DocsSidebar({ current }: { current: string }) {
 
 type TocItem = {
   url: string;
-  title: React.ReactNode;
+  title: ReactNode;
   depth: number;
 };
 
