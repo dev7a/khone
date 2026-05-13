@@ -113,71 +113,6 @@ samp {
   padding-inline: var(--pad);
 }
 
-.hero {
-  position: relative;
-  overflow: hidden;
-  padding: 82px 0 72px;
-}
-
-.hero-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 0.92fr) minmax(420px, 0.78fr);
-  gap: 64px;
-  align-items: center;
-}
-
-.hero-grid > *,
-.split > *,
-.hero-copy,
-.lead,
-.section-copy {
-  min-width: 0;
-}
-
-.hero-copy {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 20px;
-  width: 100%;
-}
-
-.eyebrow {
-  margin: 0;
-  color: var(--accent);
-  font-family: "JetBrains Mono", ui-monospace, monospace;
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0;
-  text-transform: uppercase;
-}
-
-.h-display {
-  max-width: 11ch;
-  margin: 0;
-  color: var(--fg);
-  font-size: 76px;
-  font-weight: 560;
-  line-height: 0.96;
-}
-
-.lead {
-  width: 100%;
-  max-width: 640px;
-  margin: 0;
-  color: var(--fg-1);
-  font-size: 18px;
-  line-height: 1.65;
-  overflow-wrap: break-word;
-}
-
-.actions-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 8px;
-}
-
 .perf-table [role="columnheader"],
 .side-section h2,
 .docs-toc h2 {
@@ -188,50 +123,6 @@ samp {
   font-weight: 600;
   letter-spacing: 0;
   text-transform: uppercase;
-}
-
-.section {
-  border-top: 1px solid var(--line);
-  padding: 78px 0;
-}
-
-.split {
-  display: grid;
-  grid-template-columns: minmax(0, 0.84fr) minmax(380px, 0.9fr);
-  gap: 58px;
-  align-items: center;
-}
-
-.section-head {
-  max-width: 720px;
-  margin-bottom: 28px;
-}
-
-.section-title {
-  max-width: 760px;
-  margin: 10px 0 0;
-  color: var(--fg);
-  font-size: 38px;
-  font-weight: 560;
-  line-height: 1.08;
-}
-
-.section-copy {
-  max-width: 600px;
-  margin: 18px 0 0;
-  color: var(--fg-1);
-  font-size: 16px;
-  line-height: 1.7;
-}
-
-.text-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  margin-top: 22px;
-  color: var(--accent);
-  font-size: 14px;
-  font-weight: 650;
 }
 
 .flow-board {
@@ -760,11 +651,6 @@ samp {
 }
 
 @media (max-width: 1120px) {
-  .hero-grid,
-  .split {
-    grid-template-columns: 1fr;
-  }
-
   .sim,
   .flow-board,
   .code-panel,
@@ -786,19 +672,6 @@ samp {
 }
 
 @media (max-width: 820px) {
-  .hero {
-    padding-top: 54px;
-  }
-
-  .h-display {
-    max-width: 10ch;
-    font-size: 54px;
-  }
-
-  .section-title {
-    font-size: 32px;
-  }
-
   .modes-grid,
   .docmap-grid {
     grid-template-columns: 1fr;
@@ -837,24 +710,6 @@ samp {
 @media (max-width: 560px) {
   .wrap {
     padding-inline: 14px;
-  }
-
-  .h-display {
-    max-width: 9.5ch;
-    font-size: 42px;
-  }
-
-  .hero-copy {
-    width: calc(100vw - 28px);
-    max-width: calc(100vw - 28px);
-  }
-
-  .lead {
-    width: 31ch;
-    max-width: calc(100vw - 28px);
-    font-size: 16px;
-    word-break: normal;
-    overflow-wrap: break-word;
   }
 
   .sim {

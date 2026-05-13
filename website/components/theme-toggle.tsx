@@ -32,6 +32,7 @@ export function ThemeToggle() {
       type="button"
       className="icon-btn"
       aria-label="Toggle theme"
+      aria-pressed={theme === 'dark'}
       title="Toggle theme"
       onClick={toggleTheme}
     >

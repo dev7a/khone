@@ -17,6 +17,7 @@ pnpm-debug.log*
 /website/.next/
 /website/.source/
 /website/out/
+/website/tsconfig.tsbuildinfo
 
 # Layer build artifacts
 /lambda-kit/layer-proxy/dist/

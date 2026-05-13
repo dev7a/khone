@@ -236,21 +236,21 @@ export function BatchingSimulator() {
       <div className="sim-controls">
         <div className="sim-control">
           <div className="row">
-            <label>traffic</label>
+            <label htmlFor="sim-traffic">traffic</label>
             <span className="val">
               {rps} <span>rps</span>
             </span>
           </div>
-          <input type="range" min="5" max="200" step="5" value={rps} onChange={(event) => setRps(Number(event.target.value))} />
+          <input id="sim-traffic" type="range" min="5" max="200" step="5" value={rps} onChange={(event) => setRps(Number(event.target.value))} />
         </div>
         <div className="sim-control">
           <div className="row">
-            <label>max wait</label>
+            <label htmlFor="sim-max-wait">max wait</label>
             <span className="val">
               {maxWaitMs} <span>ms</span>
             </span>
           </div>
-          <input type="range" min="0" max="200" step="5" value={maxWaitMs} onChange={(event) => setMaxWaitMs(Number(event.target.value))} />
+          <input id="sim-max-wait" type="range" min="0" max="200" step="5" value={maxWaitMs} onChange={(event) => setMaxWaitMs(Number(event.target.value))} />
         </div>
       </div>
 
