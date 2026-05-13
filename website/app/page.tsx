@@ -67,7 +67,7 @@ export default function HomePage() {
                 The gateway is a Rust Lambda Function URL router running on Lambda Managed
                 Instances. It accepts HTTP, batches inside each execution environment, invokes the
                 target with batched payloads, and demultiplexes per-request responses back to
-                clients. Oversized payloads split before invocation.
+                clients. Oversized payloads are split before invocation.
               </p>
             </div>
             <div className="arch">

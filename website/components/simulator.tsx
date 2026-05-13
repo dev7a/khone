@@ -31,6 +31,7 @@ export function BatchingSimulator() {
   const batchStartRef = useRef<number | null>(null);
   const fireFlashRef = useRef(0);
   const targetRef = useRef<HTMLDivElement | null>(null);
+  const dotElementsRef = useRef<Map<number, HTMLElement>>(new Map());
   const recentBatchesRef = useRef<number[]>([]);
 
   const [stats, setStats] = useState({ avgBatch: 3.4, costPct: 29, p95: 155 });
@@ -121,9 +122,8 @@ export function BatchingSimulator() {
 
       targetRef.current?.classList.toggle('firing', now - fireFlashRef.current < 240);
 
-      const existing = canvas.querySelectorAll<HTMLElement>('.req-dot');
-      const elements = new Map<number, HTMLElement>();
-      existing.forEach((element) => elements.set(Number(element.dataset.id), element));
+      const elements = dotElementsRef.current;
+      const activeIds = new Set<number>();
 
       for (const dot of dotsRef.current) {
         let element = elements.get(dot.id);
@@ -132,20 +132,30 @@ export function BatchingSimulator() {
           element.className = 'req-dot';
           element.dataset.id = String(dot.id);
           canvas.appendChild(element);
+          elements.set(dot.id, element);
         }
 
+        activeIds.add(dot.id);
         element.style.transform = `translate(${dot.x - 4}px, ${dot.y - 4}px)`;
         element.style.opacity = dot.phase === 'firing' ? '1' : dot.phase === 'queued' ? '0.7' : '0.9';
-        elements.delete(dot.id);
       }
 
-      for (const element of elements.values()) element.remove();
+      for (const [id, element] of elements) {
+        if (!activeIds.has(id)) {
+          element.remove();
+          elements.delete(id);
+        }
+      }
 
       raf = requestAnimationFrame(tick);
     };
 
     raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
+    return () => {
+      cancelAnimationFrame(raf);
+      for (const element of dotElementsRef.current.values()) element.remove();
+      dotElementsRef.current.clear();
+    };
   }, [rps, maxWaitMs]);
 
   useEffect(() => {
