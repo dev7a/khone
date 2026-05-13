@@ -61,7 +61,12 @@ function targetPath(rawUrl, fromRoute) {
 
 function existsFor(urlPath) {
   const decodedPath = decodeURIComponent(urlPath);
-  const fullPath = path.join(outDir, decodedPath);
+  const fullPath = path.resolve(outDir, decodedPath.replace(/^\/+/, ''));
+  const relativeToOut = path.relative(outDir, fullPath);
+
+  if (relativeToOut.startsWith('..') || path.isAbsolute(relativeToOut)) {
+    return false;
+  }
 
   if (decodedPath.endsWith('/')) {
     return existsSync(path.join(fullPath, 'index.html')) || existsSync(fullPath);
