@@ -1,0 +1,47 @@
+import type { BaseLayoutProps } from 'fumadocs-ui/layouts/shared';
+import { KhoneLogo } from '@/components/logo';
+
+function GitHubMark() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" fill="currentColor">
+      <path d="M8 0a8 8 0 0 0-2.5 15.6c.4.07.55-.17.55-.38v-1.4c-2.2.48-2.7-1.06-2.7-1.06-.36-.93-.9-1.18-.9-1.18-.74-.5.06-.5.06-.5.82.06 1.25.84 1.25.84.73 1.24 1.9.88 2.36.67.07-.52.28-.88.5-1.08-1.75-.2-3.6-.88-3.6-3.9 0-.86.31-1.57.81-2.12-.08-.2-.35-1 .08-2.08 0 0 .67-.21 2.2.81A7.6 7.6 0 0 1 8 4.1c.68 0 1.36.09 2 .27 1.52-1.02 2.2-.81 2.2-.81.43 1.07.16 1.87.08 2.07.5.55.81 1.27.81 2.12 0 3.03-1.85 3.7-3.6 3.9.28.24.53.71.53 1.44v2.13c0 .21.15.46.55.38A8 8 0 0 0 8 0z" />
+    </svg>
+  );
+}
+
+export const baseOptions = {
+  nav: {
+    title: <KhoneLogo />,
+    url: '/',
+  },
+  links: [
+    {
+      text: 'Docs',
+      url: '/docs/',
+      active: 'nested-url',
+    },
+    {
+      text: 'Reference',
+      url: '/docs/reference/config/',
+      active: 'nested-url',
+    },
+    {
+      text: 'Examples',
+      url: 'https://github.com/dev7a/khone/tree/main/examples',
+      external: true,
+    },
+    {
+      text: 'Benchmarks',
+      url: '/docs/explanation/performance-and-cost/',
+      active: 'url',
+    },
+    {
+      type: 'icon',
+      label: 'GitHub',
+      text: 'GitHub',
+      url: 'https://github.com/dev7a/khone',
+      icon: <GitHubMark />,
+      external: true,
+    },
+  ],
+} satisfies BaseLayoutProps;

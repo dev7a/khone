@@ -1,0 +1,12 @@
+{
+  "title": "How-To Guides",
+  "pages": [
+    "deploy-your-own-sam-gateway",
+    "deploy-demo-stack",
+    "deploy-benchmark-stack",
+    "run-benchmarks",
+    "tune-batching",
+    "integrate-handlers",
+    "use-mode-a-layer-proxy"
+  ]
+}
