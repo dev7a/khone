@@ -1,0 +1,12 @@
+{
+  "title": "Reference",
+  "pages": [
+    "config",
+    "batch-and-response-protocol",
+    "interleaved-streaming-protocol",
+    "observability",
+    "bootstrap-macro",
+    "sdk-adapters",
+    "benchmark-cli"
+  ]
+}

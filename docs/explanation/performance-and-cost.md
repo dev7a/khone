@@ -31,8 +31,10 @@ pass. Round 2 is shown because it reduces first-round scale and empty-state effe
 </picture>
 
 The cost bars are normalized to the standard endpoint at 100%. In this benchmark, pct had the
-lowest estimated target invocation cost, especially at higher traffic. Mux also reduced estimated
-cost at high traffic, but was less effective in the low-traffic profile.
+lowest estimated target invocation cost, especially at higher traffic. The `standard` endpoint is
+the API Gateway HTTP API plus Lambda baseline handler that sends one backend request per client
+request. Mux also reduced estimated cost at high traffic, but was less effective in the low-traffic
+profile.
 
 | Traffic profile | Endpoint | P95 latency | Estimated target cost |
 | --- | --- | ---: | ---: |
@@ -51,10 +53,10 @@ cost at high traffic, but was less effective in the low-traffic profile.
   <img alt="P95 latency by endpoint for low and high traffic profiles" src="../assets/performance-cost/p95-latency-summary-light.svg">
 </picture>
 
-The standard endpoint was fastest in these runs because it invokes the target function directly
-through API Gateway. Mux and pct add a gateway hop plus batching wait time. Pct intentionally waits
-longer when it expects batching to improve cost efficiency, so it has the highest latency in
-exchange for the lowest estimated target invocation cost.
+The standard endpoint was fastest in these runs because it avoids the Khone gateway hop and batching
+wait. Mux and pct add that gateway hop plus batching wait time. Pct intentionally waits longer when
+it expects batching to improve cost efficiency, so it has the highest latency in exchange for the
+lowest estimated target invocation cost.
 
 | Traffic profile | mux P95 | pct P95 | standard P95 |
 | --- | ---: | ---: | ---: |

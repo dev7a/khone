@@ -2,10 +2,10 @@
 
 Khone is an HTTP microbatching gateway for AWS Lambda.
 
-It buffers requests per route for a few milliseconds, invokes Lambda with a single batched payload,
-and routes each per-request response back to the original caller. This gives you a configurable
-latency-vs-cost dial: small bounded delays can reduce invocation count and improve Lambda
-utilization under load.
+It buffers requests by route and batching dimensions for a few milliseconds, invokes target Lambda
+functions with batched payloads, and routes each per-request response back to the original caller.
+This gives you a configurable latency-vs-cost dial: small bounded delays can reduce invocation count
+and improve Lambda utilization under load.
 
 The name Khone comes from Ancient Greek χώνη / χοάνη, meaning "funnel." Khone is pronounced
 roughly **KOH-nay**.
@@ -28,7 +28,8 @@ full boundary.
 
 The public benchmark snapshot compares three endpoints:
 
-- `standard`: API Gateway HTTP API directly invoking the target Lambda.
+- `standard`: API Gateway HTTP API plus Lambda baseline handler, with one backend request per
+  client request.
 - `mux`: fixed-wait Khone batching.
 - `pct`: duration-aware Khone batching that waits longer when batching is expected to save cost.
 

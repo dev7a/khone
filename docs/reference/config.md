@@ -7,7 +7,7 @@ Gateway config is YAML with PascalCase top-level fields. The config publisher em
 
 | Field | Default | Notes |
 | --- | ---: | --- |
-| `Spec` | `{ paths: {} }` | OpenAPI-ish route document. |
+| `Spec` | required | OpenAPI-ish route document; startup fails if it is missing. |
 | `AwsRegion` | Lambda environment region | Optional Lambda client region override. |
 | `MaxInflightInvocations` | `64` | Must be greater than zero. |
 | `MaxInflightRequests` | `4096` | Must be greater than zero; exceeded requests return 429. |
