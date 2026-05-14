@@ -85,8 +85,8 @@ curl -sS "$(aws cloudformation describe-stacks \
 
 `max-delay=0` disables artificial sleep in the demo handler. The target Lambda emits NDJSON records
 because the route is configured with `invokeMode: response_stream`, and the gateway returns the
-matching record body to `curl`; expect JSON with fields such as `"ok": true` and `"greeting":
-`"hello"`.
+matching record body to `curl`; expect JSON with fields such as `"ok": true` and
+`"greeting": "hello"`.
 
 What the gateway just did:
 
