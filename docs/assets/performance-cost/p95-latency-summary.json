@@ -4,15 +4,15 @@
   "x_label": "P95 latency (ms)",
   "value_format": "{:.0f} ms",
   "x_max": 520,
-  "categories": ["mux", "pct", "standard"],
+  "categories": ["steady", "adaptive", "target-aware", "standard"],
   "series": [
     {
       "label": "Low traffic (1/10/50 rps)",
-      "values": [274.86, 460.06, 197.97]
+      "values": [316.52, 282.81, 462.74, 198.11]
     },
     {
       "label": "High traffic (50/100/150 rps)",
-      "values": [302.03, 469.53, 202.2]
+      "values": [308.23, 304.31, 463.88, 196.72]
     }
   ]
 }

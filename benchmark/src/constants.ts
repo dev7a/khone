@@ -7,13 +7,16 @@ export const DEFAULT_OUTPUT_DIR = path.resolve(process.cwd(), 'benchmark-results
 export const DEFAULT_STACK_NAME = 'khone-benchmark';
 
 export const OUTPUT_KEYS_BY_ENDPOINT: Record<string, readonly string[]> = {
-  mux: ['MuxUrl', 'ModeANodeDynamicItemUrl'],
-  pct: ['PctUrl'],
-  standard: ['StandardUrl', 'DirectItemUrl'],
+  steady: ['SteadyUrl'],
+  adaptive: ['AdaptiveUrl'],
+  'target-aware': ['TargetAwareUrl'],
+  standard: ['StandardUrl'],
 };
 
 export const DEFAULT_ENDPOINTS = [
-  'mux',
+  'steady',
+  'adaptive',
+  'target-aware',
   'standard',
 ] as const;
 

@@ -16,7 +16,7 @@ test('report highlights call out tied cost instead of single winner', async () =
   const records = await loadK6Csv(fixtureCsv);
   const metrics = deriveMetrics({
     records,
-    endpointOrder: ['standard', 'mux'],
+    endpointOrder: ['standard', 'adaptive'],
     stages: [{ duration: '2s', target: 2 }],
     executor: 'ramping-arrival-rate',
     mode: 'per_endpoint',
@@ -46,7 +46,7 @@ test('report includes workload and deployed Lambda configuration', async () => {
   const records = await loadK6Csv(fixtureCsv);
   const metrics = deriveMetrics({
     records,
-    endpointOrder: ['standard', 'mux'],
+    endpointOrder: ['standard', 'adaptive'],
     stages: [
       { duration: '1s', target: 1 },
       { duration: '5m', target: 10 },
@@ -62,7 +62,7 @@ test('report includes workload and deployed Lambda configuration', async () => {
     profile: 'default',
     label: null,
     targets: [
-      { name: 'mux', url: 'https://example.com/mux' },
+      { name: 'adaptive', url: 'https://example.com/adaptive' },
       { name: 'standard', url: 'https://example.com/std' },
     ],
     k6: {
@@ -102,9 +102,9 @@ test('report includes workload and deployed Lambda configuration', async () => {
           },
         },
         {
-          logical_id: 'MUXFunction',
-          function_name: 'test-mux',
-          function_arn: 'arn:aws:lambda:us-east-1:123456789012:function:test-mux',
+          logical_id: 'AdaptiveFunction',
+          function_name: 'test-adaptive',
+          function_arn: 'arn:aws:lambda:us-east-1:123456789012:function:test-adaptive',
           runtime: 'nodejs24.x',
           package_type: 'Zip',
           memory_size_mb: 512,
@@ -152,7 +152,7 @@ test('public report omits exact generation timestamp', async () => {
   const records = await loadK6Csv(fixtureCsv);
   const metrics = deriveMetrics({
     records,
-    endpointOrder: ['standard', 'mux'],
+    endpointOrder: ['standard', 'adaptive'],
     stages: [{ duration: '2s', target: 2 }],
     executor: 'ramping-arrival-rate',
     mode: 'per_endpoint',
@@ -183,7 +183,7 @@ test('metrics json redacts infrastructure identifiers from public report data', 
   const records = await loadK6Csv(fixtureCsv);
   const metrics = deriveMetrics({
     records,
-    endpointOrder: ['standard', 'mux'],
+    endpointOrder: ['standard', 'adaptive'],
     stages: [{ duration: '2s', target: 2 }],
     executor: 'ramping-arrival-rate',
     mode: 'per_endpoint',
@@ -195,7 +195,7 @@ test('metrics json redacts infrastructure identifiers from public report data', 
     region: 'us-east-1',
     profile: 'default',
     label: null,
-    targets: [{ name: 'mux', url: 'https://example.com/mux' }],
+    targets: [{ name: 'adaptive', url: 'https://example.com/adaptive' }],
     k6: {
       vus: 50,
       arrival_time_unit: '1s',

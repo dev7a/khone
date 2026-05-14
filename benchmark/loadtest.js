@@ -123,7 +123,7 @@ function withRandomItemId(url) {
   if (normalizedBase.endsWith('/hello')) {
     return `${normalizedBase.slice(0, -'/hello'.length)}/${id}${query}`;
   }
-  // Allow explicit placeholders as endpoint URLs (e.g. /mux/{id}).
+  // Allow explicit placeholders as endpoint URLs (e.g. /adaptive/{id}).
   if (/\{[^/]+\}$/.test(normalizedBase)) {
     return `${normalizedBase.replace(/\{[^/]+\}$/, id)}${query}`;
   }
@@ -132,7 +132,7 @@ function withRandomItemId(url) {
     return `${normalizedBase.replace(/\/\d+$/, `/${id}`)}${query}`;
   }
 
-  // Preferred path: endpoint URL is a base route (/mux), append random item ID.
+  // Preferred path: endpoint URL is a base route (/adaptive), append random item ID.
   return `${normalizedBase}/${id}${query}`;
 }
 

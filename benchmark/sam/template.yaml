@@ -2,7 +2,7 @@ AWSTemplateFormatVersion: "2010-09-09"
 Transform:
   - AWS::Serverless-2016-10-31
   - KhoneGateway
-Description: Khone benchmark stack (LMI gateway + Mode A Node + direct HTTP API baseline)
+Description: Khone benchmark stack (LMI gateway + Mode A proxy-layer routes + direct HTTP API baseline)
 Metadata:
   cfn-lint:
     config:
@@ -48,7 +48,7 @@ Parameters:
     Default: 256
     MinValue: 128
     MaxValue: 10240
-    Description: Memory size in MB for benchmark handler Lambdas (mux, pct, and standard).
+    Description: Memory size in MB for benchmark handler Lambdas (steady, adaptive, target-aware, and standard).
   KhoneMaxConcurrency:
     Type: Number
     Default: 16
@@ -130,12 +130,12 @@ Resources:
         Sourcemap: false
         Target: es2020
 
-  MUXFunction:
+  SteadyFunction:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: lambda/mode-a-node/
-      FunctionName: !Sub '${AWS::StackName}-mux'
-      Description: Benchmark handler (Mode A, Node) calling backend Lambda URL.
+      FunctionName: !Sub '${AWS::StackName}-steady'
+      Description: Benchmark handler (Mode A proxy layer, Node) using a steady fixed wait.
       Architectures:
         - arm64
       MemorySize: !Ref BenchmarkHandlerMemorySize
@@ -159,12 +159,41 @@ Resources:
         Sourcemap: false
         Target: es2020
 
-  PCTFunction:
+  AdaptiveFunction:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: lambda/mode-a-node/
-      FunctionName: !Sub '${AWS::StackName}-pct'
-      Description: Benchmark handler (Mode A, Node) for pct wait policy, calling backend Lambda URL.
+      FunctionName: !Sub '${AWS::StackName}-adaptive'
+      Description: Benchmark handler (Mode A proxy layer, Node) using adaptive rate-aware wait.
+      Architectures:
+        - arm64
+      MemorySize: !Ref BenchmarkHandlerMemorySize
+      Layers:
+        - !Ref KhoneLayerArm64Arn
+      Environment:
+        Variables:
+          AWS_LAMBDA_EXEC_WRAPPER: /opt/khone/exec-wrapper.sh
+          KHONE_MAX_CONCURRENCY: !Ref KhoneMaxConcurrency
+          BENCHMARK_BACKEND_URL: !GetAtt BackendFunctionUrl.FunctionUrl
+          BENCHMARK_BACKEND_TIMEOUT_MS: !Ref BenchmarkBackendTimeoutMs
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        EntryPoints:
+          - app.ts
+        External:
+          - "@aws-sdk/*"
+        Format: cjs
+        Minify: false
+        Sourcemap: false
+        Target: es2020
+
+  TargetAwareFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: lambda/mode-a-node/
+      FunctionName: !Sub '${AWS::StackName}-target-aware'
+      Description: Benchmark handler (Mode A proxy layer, Node) using target-aware duration probes.
       Architectures:
         - arm64
       MemorySize: !Ref BenchmarkHandlerMemorySize
@@ -224,10 +253,10 @@ Resources:
         Target: es2020
 
   # Create function log groups explicitly so metric filters can be attached at deploy time.
-  MUXFunctionLogGroup:
+  SteadyFunctionLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub "/aws/lambda/${MUXFunction}"
+      LogGroupName: !Sub "/aws/lambda/${SteadyFunction}"
       RetentionInDays: 7
 
   STDFunctionLogGroup:
@@ -236,22 +265,28 @@ Resources:
       LogGroupName: !Sub "/aws/lambda/${STDFunction}"
       RetentionInDays: 7
 
-  PCTFunctionLogGroup:
+  AdaptiveFunctionLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub "/aws/lambda/${PCTFunction}"
+      LogGroupName: !Sub "/aws/lambda/${AdaptiveFunction}"
+      RetentionInDays: 7
+
+  TargetAwareFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${TargetAwareFunction}"
       RetentionInDays: 7
 
   # Emit per-minute aggregates from Lambda system logs (JSON platform events).
   # This is useful for dashboards and for cross-checking the gateway EMF metrics.
-  MUXPlatformReportBilledDurationMetricFilter:
+  SteadyPlatformReportBilledDurationMetricFilter:
     Type: AWS::Logs::MetricFilter
     Properties:
-      LogGroupName: !Ref MUXFunctionLogGroup
+      LogGroupName: !Ref SteadyFunctionLogGroup
       FilterPattern: '{ $.type = "platform.report" }'
       MetricTransformations:
         - MetricNamespace: KhoneBenchmark/LambdaLogs
-          MetricName: MUXBilledDurationMs
+          MetricName: SteadyBilledDurationMs
           MetricValue: $.record.metrics.billedDurationMs
           Unit: Milliseconds
 
@@ -266,14 +301,25 @@ Resources:
           MetricValue: $.record.metrics.billedDurationMs
           Unit: Milliseconds
 
-  PCTPlatformReportBilledDurationMetricFilter:
+  AdaptivePlatformReportBilledDurationMetricFilter:
     Type: AWS::Logs::MetricFilter
     Properties:
-      LogGroupName: !Ref PCTFunctionLogGroup
+      LogGroupName: !Ref AdaptiveFunctionLogGroup
       FilterPattern: '{ $.type = "platform.report" }'
       MetricTransformations:
         - MetricNamespace: KhoneBenchmark/LambdaLogs
-          MetricName: PCTBilledDurationMs
+          MetricName: AdaptiveBilledDurationMs
+          MetricValue: $.record.metrics.billedDurationMs
+          Unit: Milliseconds
+
+  TargetAwarePlatformReportBilledDurationMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref TargetAwareFunctionLogGroup
+      FilterPattern: '{ $.type = "platform.report" }'
+      MetricTransformations:
+        - MetricNamespace: KhoneBenchmark/LambdaLogs
+          MetricName: TargetAwareBilledDurationMs
           MetricValue: $.record.metrics.billedDurationMs
           Unit: Milliseconds
 
@@ -289,9 +335,18 @@ Resources:
           title: Khone benchmark stack
           version: "1"
         paths:
-          /mux/{id}:
+          /steady/{id}:
             get:
-              x-target-lambda: !GetAtt MUXFunction.Arn
+              x-target-lambda: !GetAtt SteadyFunction.Arn
+              x-khone:
+                maxWaitMs: 100
+                maxBatchSize: !Ref KhoneMaxConcurrency
+                invokeMode: response_stream
+                timeoutMs: 8000
+                profiling: false
+          /adaptive/{id}:
+            get:
+              x-target-lambda: !GetAtt AdaptiveFunction.Arn
               x-khone:
                 maxWaitMs: 100
                 maxBatchSize: !Ref KhoneMaxConcurrency
@@ -304,9 +359,9 @@ Resources:
                   steepness: 0.5
                   samplingIntervalMs: 100
                   smoothingSamples: 5
-          /pct/{id}:
+          /target-aware/{id}:
             get:
-              x-target-lambda: !GetAtt PCTFunction.Arn
+              x-target-lambda: !GetAtt TargetAwareFunction.Arn
               x-khone:
                 maxWaitMs: 2000
                 maxBatchSize: !Ref KhoneMaxConcurrency
@@ -376,30 +431,34 @@ Resources:
                 - lambda:InvokeFunction
                 - lambda:InvokeWithResponseStream
               Resource:
-                - !GetAtt MUXFunction.Arn
-                - !GetAtt PCTFunction.Arn
+                - !GetAtt SteadyFunction.Arn
+                - !GetAtt AdaptiveFunction.Arn
+                - !GetAtt TargetAwareFunction.Arn
 
 Outputs:
   BenchmarkBackendUrl:
     Value: !GetAtt BackendFunctionUrl.FunctionUrl
 
   BenchmarkEndpointsCsv:
-    Value: "mux,pct,standard"
+    Value: "steady,adaptive,target-aware,standard"
 
   BenchmarkTargetsJson:
-    Value: !Sub '[{"name":"mux","url":"${GatewayFunctionUrl.FunctionUrl}mux"},{"name":"pct","url":"${GatewayFunctionUrl.FunctionUrl}pct"},{"name":"standard","url":"https://${DirectHttpApi}.execute-api.${AWS::Region}.amazonaws.com/std"}]'
+    Value: !Sub '[{"name":"steady","url":"${GatewayFunctionUrl.FunctionUrl}steady"},{"name":"adaptive","url":"${GatewayFunctionUrl.FunctionUrl}adaptive"},{"name":"target-aware","url":"${GatewayFunctionUrl.FunctionUrl}target-aware"},{"name":"standard","url":"https://${DirectHttpApi}.execute-api.${AWS::Region}.amazonaws.com/std"}]'
 
   ModeANodeFunctionArn:
-    Value: !GetAtt MUXFunction.Arn
+    Value: !GetAtt AdaptiveFunction.Arn
 
   DirectItemFunctionArn:
     Value: !GetAtt STDFunction.Arn
 
-  MUXFunctionArn:
-    Value: !GetAtt MUXFunction.Arn
+  SteadyFunctionArn:
+    Value: !GetAtt SteadyFunction.Arn
 
-  PCTFunctionArn:
-    Value: !GetAtt PCTFunction.Arn
+  AdaptiveFunctionArn:
+    Value: !GetAtt AdaptiveFunction.Arn
+
+  TargetAwareFunctionArn:
+    Value: !GetAtt TargetAwareFunction.Arn
 
   STDFunctionArn:
     Value: !GetAtt STDFunction.Arn
@@ -411,13 +470,16 @@ Outputs:
     Value: !GetAtt GatewayService.ConfigS3Uri
 
   ModeANodeDynamicItemUrl:
-    Value: !Sub "${GatewayFunctionUrl.FunctionUrl}mux"
+    Value: !Sub "${GatewayFunctionUrl.FunctionUrl}adaptive"
 
-  MuxUrl:
-    Value: !Sub "${GatewayFunctionUrl.FunctionUrl}mux"
+  SteadyUrl:
+    Value: !Sub "${GatewayFunctionUrl.FunctionUrl}steady"
 
-  PctUrl:
-    Value: !Sub "${GatewayFunctionUrl.FunctionUrl}pct"
+  AdaptiveUrl:
+    Value: !Sub "${GatewayFunctionUrl.FunctionUrl}adaptive"
+
+  TargetAwareUrl:
+    Value: !Sub "${GatewayFunctionUrl.FunctionUrl}target-aware"
 
   DirectItemUrl:
     Value: !Sub "https://${DirectHttpApi}.execute-api.${AWS::Region}.amazonaws.com/std"

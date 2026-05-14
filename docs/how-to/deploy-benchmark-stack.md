@@ -1,7 +1,7 @@
 # Deploy the benchmark stack
 
-The benchmark stack deploys a dedicated LMI gateway, two Mode A target handlers, a standard
-API Gateway HTTP API baseline, and a shared backend Lambda URL workload.
+The benchmark stack deploys a dedicated LMI gateway, three Mode A proxy-layer target handlers, a
+standard API Gateway HTTP API baseline, and a shared backend Lambda URL workload.
 
 ## Prerequisites
 
@@ -27,7 +27,7 @@ make benchmark-sam-deploy \
 
 - `BenchmarkTargetsJson`: preferred explicit list of benchmark endpoints.
 - `BenchmarkEndpointsCsv`: optional endpoint name list.
-- `MuxUrl`, `PctUrl`, and `StandardUrl`: endpoint outputs.
+- `SteadyUrl`, `AdaptiveUrl`, `TargetAwareUrl`, and `StandardUrl`: endpoint outputs.
 - `BenchmarkBackendUrl`: backend workload URL.
 - `GatewayFunctionUrl`: gateway Function URL.
 
@@ -37,8 +37,9 @@ These outputs are consumed by the `benchviz` CLI.
 
 The stack publishes CloudWatch Logs metric filters for Lambda `platform.report` events:
 
-- `MUXBilledDurationMs`
-- `PCTBilledDurationMs`
+- `SteadyBilledDurationMs`
+- `AdaptiveBilledDurationMs`
+- `TargetAwareBilledDurationMs`
 - `STDBilledDurationMs`
 
 Additional template parameters (`EmfMetricsEnabled`, `ObservabilityEnabled`,

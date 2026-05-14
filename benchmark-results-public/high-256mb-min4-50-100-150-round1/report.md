@@ -3,7 +3,7 @@
 Executor: ramping-arrival-rate
 Mode: per_endpoint
 Max delay: 0ms
-Endpoints: mux, pct, standard
+Endpoints: steady, adaptive, target-aware, standard
 
 ## Test Configuration
 
@@ -37,8 +37,9 @@ Region: `us-east-1`
 
 | Endpoint |
 | :-- |
-| mux |
-| pct |
+| steady |
+| adaptive |
+| target-aware |
 | standard |
 
 ### Stack Parameters
@@ -58,45 +59,54 @@ _Lambda configuration was not captured for this run._
 
 ## Key Findings
 
-- Fastest p95 endpoint: **standard** at **195.62 ms**.
-- Most cost-efficient endpoint (estimate): **pct** at **17.63%** of standard baseline.
-- Lowest observed error rate is a tie at **0.000%** across: **mux, pct, standard**.
+- Fastest p95 endpoint: **standard** at **195.79 ms**.
+- Most cost-efficient endpoint (estimate): **target-aware** at **17.68%** of standard baseline.
+- Lowest observed error rate is a tie at **0.000%** across: **steady, adaptive, target-aware, standard**.
 
 ## Endpoint Ranking
 
 | Rank | Endpoint | p95 (ms) | Error rate | Cost (% of standard) | Effective batch | Requests |
 | ---: | :-- | ---: | ---: | ---: | ---: | ---: |
-| 1 | standard | 195.62 | 0.000% | 100.00 | 1.00 | 40499 |
-| 2 | mux | 303.20 | 0.000% | 36.37 | 2.75 | 40498 |
-| 3 | pct | 680.06 | 0.000% | 17.63 | 5.67 | 40499 |
+| 1 | standard | 195.79 | 0.000% | 100.00 | 1.00 | 40499 |
+| 2 | adaptive | 301.43 | 0.000% | 36.13 | 2.77 | 40499 |
+| 3 | steady | 308.82 | 0.000% | 32.51 | 3.08 | 40499 |
+| 4 | target-aware | 466.89 | 0.000% | 17.68 | 5.66 | 40499 |
 
 ## Stage Latency Stats (per endpoint)
 
 Computed from sampled `http_req_duration` points with status `200`, grouped by configured stage windows.
 
-### mux
+### steady
 
 | Stage | Target (rps) | Window (s) | Samples | Avg (ms) | p50 (ms) | p95 (ms) | p99 (ms) | Max (ms) |
 | ---: | ---: | :-- | ---: | ---: | ---: | ---: | ---: | ---: |
-| 1 | 50 | 0-180 | 228 | 214.58 | 208.79 | 287.62 | 308.60 | 389.98 |
-| 2 | 100 | 180-360 | 682 | 239.16 | 238.47 | 304.47 | 385.94 | 623.43 |
-| 3 | 150 | 360-540 | 1090 | 236.16 | 238.47 | 302.15 | 315.67 | 491.02 |
+| 1 | 50 | 0-180 | 247 | 253.36 | 258.47 | 312.97 | 332.60 | 475.85 |
+| 2 | 100 | 180-360 | 645 | 240.73 | 242.34 | 302.37 | 369.30 | 877.47 |
+| 3 | 150 | 360-540 | 1108 | 236.73 | 238.19 | 300.89 | 322.85 | 459.22 |
 
-### pct
+### adaptive
 
 | Stage | Target (rps) | Window (s) | Samples | Avg (ms) | p50 (ms) | p95 (ms) | p99 (ms) | Max (ms) |
 | ---: | ---: | :-- | ---: | ---: | ---: | ---: | ---: | ---: |
-| 1 | 50 | 0-180 | 236 | 341.58 | 344.16 | 467.38 | 733.65 | 795.27 |
-| 2 | 100 | 180-360 | 704 | 316.30 | 318.78 | 437.10 | 479.59 | 668.41 |
-| 3 | 150 | 360-540 | 1060 | 319.88 | 319.04 | 438.57 | 535.90 | 1000.78 |
+| 1 | 50 | 0-180 | 212 | 208.11 | 205.55 | 271.59 | 292.45 | 350.18 |
+| 2 | 100 | 180-360 | 677 | 238.38 | 239.83 | 298.85 | 319.78 | 540.63 |
+| 3 | 150 | 360-540 | 1111 | 234.26 | 236.09 | 299.70 | 314.80 | 464.49 |
+
+### target-aware
+
+| Stage | Target (rps) | Window (s) | Samples | Avg (ms) | p50 (ms) | p95 (ms) | p99 (ms) | Max (ms) |
+| ---: | ---: | :-- | ---: | ---: | ---: | ---: | ---: | ---: |
+| 1 | 50 | 0-180 | 228 | 337.59 | 354.76 | 451.72 | 475.83 | 524.86 |
+| 2 | 100 | 180-360 | 673 | 320.94 | 324.70 | 443.95 | 472.95 | 556.15 |
+| 3 | 150 | 360-540 | 1099 | 312.37 | 312.33 | 437.32 | 509.72 | 844.91 |
 
 ### standard
 
 | Stage | Target (rps) | Window (s) | Samples | Avg (ms) | p50 (ms) | p95 (ms) | p99 (ms) | Max (ms) |
 | ---: | ---: | :-- | ---: | ---: | ---: | ---: | ---: | ---: |
-| 1 | 50 | 0-180 | 234 | 168.53 | 161.61 | 201.79 | 225.57 | 1237.39 |
-| 2 | 100 | 180-360 | 696 | 157.58 | 155.69 | 196.03 | 202.63 | 250.85 |
-| 3 | 150 | 360-540 | 1070 | 158.95 | 156.86 | 194.65 | 203.19 | 1280.73 |
+| 1 | 50 | 0-180 | 230 | 164.49 | 165.56 | 196.93 | 204.15 | 551.20 |
+| 2 | 100 | 180-360 | 701 | 160.31 | 160.36 | 196.55 | 207.77 | 261.40 |
+| 3 | 150 | 360-540 | 1069 | 158.10 | 156.98 | 195.64 | 210.46 | 310.08 |
 
 
 ## Charts

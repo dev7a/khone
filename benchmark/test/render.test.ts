@@ -21,7 +21,7 @@ test('renderCharts outputs PNG files with content', async () => {
   const records = await loadK6Csv(fixtureCsv);
   const metrics = deriveMetrics({
     records,
-    endpointOrder: ['standard', 'mux'],
+    endpointOrder: ['standard', 'adaptive'],
     stages: [{ duration: '3s', target: 2 }],
     executor: 'ramping-arrival-rate',
     mode: 'per_endpoint',
@@ -46,7 +46,7 @@ test('transparent light and dark themes use alpha background in chart specs', as
   const records = await loadK6Csv(fixtureCsv);
   const metrics = deriveMetrics({
     records,
-    endpointOrder: ['standard', 'mux'],
+    endpointOrder: ['standard', 'adaptive'],
     stages: [{ duration: '3s', target: 2 }],
     executor: 'ramping-arrival-rate',
     mode: 'per_endpoint',
@@ -80,7 +80,7 @@ test('latency distribution stays linear even with high outliers', async () => {
 
   const metrics = deriveMetrics({
     records: withOutlierGap,
-    endpointOrder: ['standard', 'mux'],
+    endpointOrder: ['standard', 'adaptive'],
     stages: [{ duration: '3s', target: 2 }],
     executor: 'ramping-arrival-rate',
     mode: 'per_endpoint',
@@ -115,7 +115,7 @@ test('latency distribution overlays red error points for non-200 latency samples
   const records = await loadK6Csv(fixtureCsv);
   const metrics = deriveMetrics({
     records,
-    endpointOrder: ['standard', 'mux'],
+    endpointOrder: ['standard', 'adaptive'],
     stages: [{ duration: '3s', target: 2 }],
     executor: 'ramping-arrival-rate',
     mode: 'per_endpoint',
@@ -138,7 +138,7 @@ test('latency distribution title includes run configuration context', async () =
   const records = await loadK6Csv(fixtureCsv);
   const metrics = deriveMetrics({
     records,
-    endpointOrder: ['standard', 'mux'],
+    endpointOrder: ['standard', 'adaptive'],
     stages: [{ duration: '3s', target: 2 }],
     executor: 'ramping-arrival-rate',
     mode: 'per_endpoint',

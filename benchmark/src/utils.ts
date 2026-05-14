@@ -7,10 +7,6 @@ const execFileAsync = promisify(execFile);
 
 const DURATION_RE = /(\d+(?:\.\d+)?)(ms|s|m|h)/g;
 const SLUG_RE = /[^a-zA-Z0-9._-]+/g;
-const ENDPOINT_ALIASES: Record<string, string> = {
-  'mode-a-node-dynamic-item': 'mux',
-  'direct-item': 'standard',
-};
 
 export function parseDurationToSeconds(value: string): number {
   if (!value) {
@@ -127,7 +123,7 @@ export function extractEndpoint(extraTags: string): string {
 }
 
 export function normalizeEndpointName(endpoint: string): string {
-  return ENDPOINT_ALIASES[endpoint] ?? endpoint;
+  return endpoint;
 }
 
 export async function ensureDir(dir: string): Promise<void> {

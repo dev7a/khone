@@ -8,8 +8,9 @@ This page explains how those reports are produced and how to read the measuremen
 
 ## Endpoints
 
-- `mux`: Mode A route with fixed wait behavior.
-- `pct`: Mode A route with duration-based wait behavior.
+- `steady`: Mode A proxy-layer route with a fixed bounded wait.
+- `adaptive`: Mode A proxy-layer route with rate-aware adaptive wait behavior.
+- `target-aware`: Mode A proxy-layer route with duration probe-aware wait behavior.
 - `standard`: API Gateway HTTP API plus Lambda baseline.
 
 ## Measurements

@@ -26,12 +26,14 @@ full boundary.
 
 ## Performance and Cost Snapshot
 
-The public benchmark snapshot compares three endpoints:
+The public benchmark snapshot compares four endpoints:
 
 - `standard`: API Gateway HTTP API plus Lambda baseline handler, with one backend request per
   client request.
-- `mux`: fixed-wait Khone batching.
-- `pct`: duration-aware Khone batching that waits longer when batching is expected to save cost.
+- `steady`: Mode A proxy-layer route with a fixed bounded wait.
+- `adaptive`: Mode A proxy-layer route that adjusts wait time from observed request rate.
+- `target-aware`: Mode A proxy-layer route that waits longer when duration probes indicate batching
+  can reduce target invocation work.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/assets/performance-cost/cost-estimate-summary-dark.svg">
@@ -39,10 +41,11 @@ The public benchmark snapshot compares three endpoints:
   <img alt="Estimated target invocation cost by endpoint, normalized to the standard endpoint" src="docs/assets/performance-cost/cost-estimate-summary-light.svg">
 </picture>
 
-At 256 MB target-function memory, pct produced the lowest estimated target invocation cost in the
-curated public runs: 45.7% of the standard baseline in the low-traffic profile and 17.8% in the
-high-traffic profile. Mux reached 85.3% and 36.4% respectively. These projections cover target
-Lambda invocation work, not the full AWS bill.
+At 256 MB target-function memory, target-aware batching produced the lowest estimated target
+invocation cost in the curated public runs: 45.1% of the standard baseline in the low-traffic
+profile and 17.7% in the high-traffic profile. Steady batching reached 65.4% and 32.4%;
+adaptive reached 85.1% and 36.2%. These projections cover target Lambda invocation work, not the
+full AWS bill.
 
 The generated benchmark chart below is the high-traffic round 2 public report. It shows sampled
 latency over time, per-stage cost bars, and heatmap summaries.
@@ -66,8 +69,8 @@ caveats, and links to the sanitized reports.
 - SAM `CapacityProviderConfig` attaches an existing LMI capacity provider.
 - `FunctionUrlConfig.InvokeMode: RESPONSE_STREAM` exposes the HTTP interface.
 
-The macro no longer creates App Runner resources, container images, gateway IAM roles, or release
-automation.
+Deployment resources stay explicit in your SAM template; the macro is only responsible for the
+gateway config artifact.
 
 ## Quick Start
 

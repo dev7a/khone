@@ -45,8 +45,8 @@ any time.
 2. The gateway matches a compiled route from `Spec.paths`.
 3. The request is queued by target Lambda, method, route template, invoke mode, profiling setting,
    and optional `x-khone.key` dimensions.
-4. The queue flushes when `maxBatchSize` is reached, `maxWaitMs` expires, or `dynamicWait` or
-   `durationWait` chooses an earlier flush window.
+4. The queue flushes when `maxBatchSize` is reached, `maxWaitMs` expires, or an adaptive or
+   target-aware wait policy chooses an earlier flush window.
 5. The target Lambda returns buffered JSON or NDJSON response records. Oversized flushed batches can
    be split into multiple target invocations before this step.
 6. The gateway maps each response id back to the waiting client request.
@@ -89,7 +89,7 @@ Spec:
           maxWaitMs: 35
           key:
             - header:x-tenant-id
-          dynamicWait:
+          dynamicWait: # adaptive wait policy
             minWaitMs: 5
             targetRps: 50
 ```

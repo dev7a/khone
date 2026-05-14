@@ -1339,7 +1339,7 @@ section.block {
   line-height: 0.85;
 }
 
-.bigstat .num .pct {
+.bigstat .num .metric {
   color: var(--accent);
 }
 

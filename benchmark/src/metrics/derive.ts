@@ -395,13 +395,7 @@ export function deriveMetrics(args: DeriveMetricsArgs): MetricsBundle {
     };
   });
 
-  const standardCandidates = summaryRows.filter((row) => row.endpoint === 'standard');
-  const legacyDirectCandidates = summaryRows.filter((row) => row.endpoint.startsWith('direct-'));
-  const baselineStandard =
-    summaryRows.find((row) => row.endpoint === 'standard') ??
-    summaryRows.find((row) => row.endpoint === 'direct-item') ??
-    (standardCandidates.length > 0 ? standardCandidates[0] : null) ??
-    (legacyDirectCandidates.length > 0 ? legacyDirectCandidates[0] : null);
+  const baselineStandard = summaryRows.find((row) => row.endpoint === 'standard') ?? null;
   const baseline = baselineStandard?.est_invocations_per_request ?? null;
   if (baseline && baseline > 0) {
     for (const row of summaryRows) {
@@ -413,8 +407,6 @@ export function deriveMetrics(args: DeriveMetricsArgs): MetricsBundle {
 
   const durationCostBaseline =
     summaryRows.find((row) => row.endpoint === 'standard')?.duration_cost_proxy_ms ??
-    summaryRows.find((row) => row.endpoint === 'direct-item')?.duration_cost_proxy_ms ??
-    summaryRows.find((row) => row.endpoint.startsWith('direct-'))?.duration_cost_proxy_ms ??
     null;
   if (durationCostBaseline && durationCostBaseline > 0) {
     for (const row of summaryRows) {
@@ -428,11 +420,6 @@ export function deriveMetrics(args: DeriveMetricsArgs): MetricsBundle {
   for (const stage of stageWindows) {
     const baselineCost =
       durationCostByEndpointStage.get(stageKey('standard', stage.index)) ??
-      durationCostByEndpointStage.get(stageKey('direct-item', stage.index)) ??
-      normalizedEndpointOrder
-        .filter((endpoint) => endpoint.startsWith('direct-'))
-        .map((endpoint) => durationCostByEndpointStage.get(stageKey(endpoint, stage.index)))
-        .find((value) => value != null) ??
       null;
     for (const endpoint of normalizedEndpointOrder) {
       const cost = durationCostByEndpointStage.get(stageKey(endpoint, stage.index));

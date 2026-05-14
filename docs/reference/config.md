@@ -72,17 +72,17 @@ Supported HTTP methods are `get`, `post`, `put`, `delete`, `patch`, `head`, and 
 | `timeoutMs` | u64 (ms) | No | `DefaultTimeoutMs` | Per-operation timeout override. |
 | `invokeMode` | enum | No | `buffered` | One of `buffered` or `response_stream`. |
 | `profiling` | bool | No | `false` | Enables Lambda log-tail profiling (extracts the `REPORT` line for billed duration, init duration, etc.). Adds overhead. |
-| `dynamicWait` | object | No | absent | Rate-based adaptive wait policy. Mutually exclusive with `durationWait`. |
-| `durationWait` | object | No | absent | Probe-smoothed duration-based wait policy. Mutually exclusive with `dynamicWait`. |
+| `dynamicWait` | object | No | absent | Adaptive wait policy based on observed request rate. Mutually exclusive with `durationWait`. |
+| `durationWait` | object | No | absent | Target-aware wait policy based on duration probes. Mutually exclusive with `dynamicWait`. |
 
 The gateway always partitions batches by `(target_lambda, method, route_template, invokeMode,
 profiling)`; any `key` entries add further partitions on top.
 
-## Dynamic wait
+## Adaptive wait
 
-`dynamicWait` derives a per-batch flush window from observed request rate using a sigmoid centered
-on `targetRps`. Use it when traffic changes quickly and a fixed `maxWaitMs` either over-waits at low
-traffic or under-batches at high traffic.
+`dynamicWait` is the YAML field for adaptive batching. It derives a per-batch flush window from
+observed request rate using a sigmoid centered on `targetRps`. Use it when traffic changes quickly
+and a fixed `maxWaitMs` either over-waits at low traffic or under-batches at high traffic.
 
 | Field | Type | Required | Default | Notes |
 | --- | --- | --- | --- | --- |
@@ -101,12 +101,12 @@ dynamicWait:
   smoothingSamples: 10
 ```
 
-## Duration wait
+## Target-aware wait
 
-`durationWait` uses single-request probe invocations per batch key, smooths the observed durations,
-and sets the per-batch flush window from `fraction` of the smoothed target duration. `maxWaitMs`
-remains the upper bound. Probes avoid the positive feedback loop that would result from measuring
-batched durations.
+`durationWait` is the YAML field for target-aware batching. It uses single-request probe
+invocations per batch key, smooths the observed durations, and sets the per-batch flush window from
+`fraction` of the smoothed target duration. `maxWaitMs` remains the upper bound. Probes avoid the
+positive feedback loop that would result from measuring batched durations.
 
 | Field | Type | Required | Default | Notes |
 | --- | --- | --- | --- | --- |

@@ -10,7 +10,7 @@ Khone uses the Lambda Managed Instances (LMI) deployment model. The gateway is d
 - A batching gateway that can reduce target Lambda invocations when traffic can be grouped.
 - A protocol and adapter set for Lambda handlers that receive batched requests and return per-request responses.
 - A CloudFormation macro package that publishes inline gateway configuration to S3.
-- A benchmark harness for comparing direct API Gateway invocation, mux batching, and duration-aware percentage batching.
+- A benchmark harness for comparing direct API Gateway invocation with steady, adaptive, and target-aware batching.
 
 ## What this project is not
 
