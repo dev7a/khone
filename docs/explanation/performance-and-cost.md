@@ -2,7 +2,8 @@
 
 The benchmark results are important because Khone exists to trade a small amount of gateway latency
 for fewer target Lambda invocations. The public benchmark snapshot should be read in that frame:
-mux and pct are useful when batching reduces enough downstream work to justify the extra hop.
+steady, adaptive, and target-aware batching are useful when batching reduces enough downstream work
+to justify the extra hop.
 
 The charts below summarize benchmark runs at 256 MB target-function memory, with the gateway running
 on LMI and using a minimum of four execution environments during the final benchmark pass. Round 2
@@ -20,7 +21,7 @@ is shown because it reduces first-round scale and empty-state effects.
 | Gateway scaling for final pass | minimum `4` execution environments |
 | Low traffic profile | 5m at 1 rps, then 5m ramping 1 to 10 rps, then 5m ramping 10 to 50 rps |
 | High traffic profile | 3m ramping 0 to 50 rps, then 3m ramping 50 to 100 rps, then 3m ramping 100 to 150 rps |
-| Error rate in round 2 summaries | `0.000%` for mux, pct, and standard |
+| Error rate in round 2 summaries | Low traffic: `0.000%` for all endpoints. High traffic: steady and target-aware had `0.000%`; adaptive and standard each recorded 1 error out of 40,499 requests. |
 
 ## Cost summary
 
@@ -30,20 +31,23 @@ is shown because it reduces first-round scale and empty-state effects.
   <img alt="Estimated target invocation cost by endpoint, normalized to the standard endpoint" src="../assets/performance-cost/cost-estimate-summary-light.svg">
 </picture>
 
-The cost bars are normalized to the standard endpoint at 100%. In this benchmark, pct had the
-lowest estimated target invocation cost, especially at higher traffic. The `standard` endpoint is
-the API Gateway HTTP API plus Lambda baseline handler that sends one backend request per client
-request. Mux also reduced estimated cost at high traffic, but was less effective in the low-traffic
-profile.
+The cost bars are normalized to the standard endpoint at 100%. In this benchmark, target-aware
+batching had the lowest estimated target invocation cost, especially at higher traffic. The
+`standard` endpoint is the API Gateway HTTP API plus Lambda baseline handler that sends one backend
+request per client request. Steady batching uses a fixed bounded wait; adaptive batching responds to
+observed request rate; target-aware batching uses duration probes to wait longer when batching is
+expected to improve target cost.
 
 | Traffic profile | Endpoint | P95 latency | Estimated target cost |
 | --- | --- | ---: | ---: |
-| Low, 1/10/50 rps | mux | 275 ms | 85.3% |
-| Low, 1/10/50 rps | pct | 460 ms | 45.7% |
+| Low, 1/10/50 rps | steady | 317 ms | 65.4% |
+| Low, 1/10/50 rps | adaptive | 283 ms | 85.1% |
+| Low, 1/10/50 rps | target-aware | 463 ms | 45.1% |
 | Low, 1/10/50 rps | standard | 198 ms | 100.0% |
-| High, 50/100/150 rps | mux | 302 ms | 36.4% |
-| High, 50/100/150 rps | pct | 470 ms | 17.8% |
-| High, 50/100/150 rps | standard | 202 ms | 100.0% |
+| High, 50/100/150 rps | steady | 308 ms | 32.4% |
+| High, 50/100/150 rps | adaptive | 304 ms | 36.2% |
+| High, 50/100/150 rps | target-aware | 464 ms | 17.7% |
+| High, 50/100/150 rps | standard | 197 ms | 100.0% |
 
 ## Latency summary
 
@@ -54,19 +58,20 @@ profile.
 </picture>
 
 The standard endpoint was fastest in these runs because it avoids the Khone gateway hop and batching
-wait. Mux and pct add that gateway hop plus batching wait time. Pct intentionally waits longer when
-it expects batching to improve cost efficiency, so it has the highest latency in exchange for the
-lowest estimated target invocation cost.
+wait. Steady, adaptive, and target-aware batching add that gateway hop plus batching wait time.
+Target-aware batching intentionally waits longer when it expects batching to improve cost
+efficiency, so it has the highest latency in exchange for the lowest estimated target invocation
+cost.
 
-| Traffic profile | mux P95 | pct P95 | standard P95 |
-| --- | ---: | ---: | ---: |
-| Low, 1/10/50 rps | 275 ms | 460 ms | 198 ms |
-| High, 50/100/150 rps | 302 ms | 470 ms | 202 ms |
+| Traffic profile | steady P95 | adaptive P95 | target-aware P95 | standard P95 |
+| --- | ---: | ---: | ---: | ---: |
+| Low, 1/10/50 rps | 317 ms | 283 ms | 463 ms | 198 ms |
+| High, 50/100/150 rps | 308 ms | 304 ms | 464 ms | 197 ms |
 
 ## Generated benchmark charts
 
 These generated charts show sampled latency over time, per-stage cost bars, and heatmap summaries
-for each endpoint.
+for each endpoint. They are the public chart artifacts from the round 2 benchmark reports.
 
 ### Low traffic, round 2
 

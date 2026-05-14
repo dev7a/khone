@@ -581,11 +581,7 @@ export async function deriveMetricsFromK6CsvStream(
     };
   });
 
-  const baselineStandard =
-    summaryRows.find((row) => row.endpoint === 'standard') ??
-    summaryRows.find((row) => row.endpoint === 'direct-item') ??
-    summaryRows.find((row) => row.endpoint.startsWith('direct-')) ??
-    null;
+  const baselineStandard = summaryRows.find((row) => row.endpoint === 'standard') ?? null;
   const baseline = baselineStandard?.est_invocations_per_request ?? null;
   if (baseline && baseline > 0) {
     for (const row of summaryRows) {
@@ -597,8 +593,6 @@ export async function deriveMetricsFromK6CsvStream(
 
   const durationCostBaseline =
     summaryRows.find((row) => row.endpoint === 'standard')?.duration_cost_proxy_ms ??
-    summaryRows.find((row) => row.endpoint === 'direct-item')?.duration_cost_proxy_ms ??
-    summaryRows.find((row) => row.endpoint.startsWith('direct-'))?.duration_cost_proxy_ms ??
     null;
   if (durationCostBaseline && durationCostBaseline > 0) {
     for (const row of summaryRows) {
@@ -612,11 +606,6 @@ export async function deriveMetricsFromK6CsvStream(
   for (const stage of stageWindows) {
     const baselineCost =
       selectedDurationCostState(durationCostStates.get('standard'))?.stageDurationCostProxyMs.get(stage.index) ??
-      selectedDurationCostState(durationCostStates.get('direct-item'))?.stageDurationCostProxyMs.get(stage.index) ??
-      normalizedEndpointOrder
-        .filter((endpoint) => endpoint.startsWith('direct-'))
-        .map((endpoint) => selectedDurationCostState(durationCostStates.get(endpoint))?.stageDurationCostProxyMs.get(stage.index))
-        .find((value) => value != null) ??
       null;
     for (const endpoint of normalizedEndpointOrder) {
       const cost = selectedDurationCostState(durationCostStates.get(endpoint))?.stageDurationCostProxyMs.get(stage.index);

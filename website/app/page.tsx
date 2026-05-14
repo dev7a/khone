@@ -265,9 +265,9 @@ exports.handler = batchAdapter(handleItem);`}</code>
               <p className="lede">
                 The public benchmark normalizes target invocation cost to the standard endpoint,
                 an API Gateway HTTP API plus Lambda baseline, at 100%. In the high-traffic profile,
-                <em>pct</em> — duration-aware batching — delivered the lowest estimated target cost.
-                The standard endpoint stays fastest because it avoids the gateway hop; Khone&apos;s value
-                is the cost/throughput tradeoff, not minimum single-request latency.
+                <em>target-aware</em> batching delivered the lowest estimated target cost. The
+                standard endpoint stays fastest because it avoids the gateway hop; Khone&apos;s value is
+                the cost/throughput tradeoff, not minimum single-request latency.
               </p>
             </div>
 
@@ -275,10 +275,10 @@ exports.handler = batchAdapter(handleItem);`}</code>
               <div className="bigstat">
                 <span className="eyebrow">
                   <span className="dot" />
-                  pct · 256 MB · high traffic
+                  target-aware · 256 MB · high traffic
                 </span>
                 <div className="num">
-                  <span className="pct">17.8</span>
+                  <span className="metric">17.7</span>
                   <span>%</span>
                 </div>
                 <p className="label">of standard target invocation cost in the curated round-2 high-traffic public report.</p>
@@ -296,13 +296,15 @@ exports.handler = batchAdapter(handleItem);`}</code>
                 <tbody>
                   {[
                     ['Low · 1/10/50 rps', 'standard', '198 ms', '100.0%', 80],
-                    ['Low · 1/10/50 rps', 'mux', '275 ms', '85.3%', 68],
-                    ['Low · 1/10/50 rps', 'pct', '460 ms', '45.7%', 36],
-                    ['High · 50/100/150 rps', 'standard', '202 ms', '100.0%', 80],
-                    ['High · 50/100/150 rps', 'mux', '302 ms', '36.4%', 29],
-                    ['High · 50/100/150 rps', 'pct', '470 ms', '17.8%', 14],
+                    ['Low · 1/10/50 rps', 'steady', '317 ms', '65.4%', 52],
+                    ['Low · 1/10/50 rps', 'adaptive', '283 ms', '85.1%', 68],
+                    ['Low · 1/10/50 rps', 'target-aware', '463 ms', '45.1%', 36],
+                    ['High · 50/100/150 rps', 'standard', '197 ms', '100.0%', 80],
+                    ['High · 50/100/150 rps', 'steady', '308 ms', '32.4%', 26],
+                    ['High · 50/100/150 rps', 'adaptive', '304 ms', '36.2%', 29],
+                    ['High · 50/100/150 rps', 'target-aware', '464 ms', '17.7%', 14],
                   ].map(([profile, endpoint, p95, cost, width], index) => (
-                    <tr className={endpoint === 'pct' ? 'hl' : undefined} key={`${profile}-${endpoint}-${index}`}>
+                    <tr className={endpoint === 'target-aware' ? 'hl' : undefined} key={`${profile}-${endpoint}-${index}`}>
                       <td>{profile}</td>
                       <td>{endpoint}</td>
                       <td className="num">{p95}</td>
@@ -320,7 +322,7 @@ exports.handler = batchAdapter(handleItem);`}</code>
               <span>Target memory: 256 MB</span>
               <span>Backend: 80 ms + 80 ms jitter</span>
               <span>Min 4 LMI envs</span>
-              <span>Round 2 errors: 0.000%</span>
+              <span>Round 2: low traffic 0 errors</span>
             </div>
           </div>
         </section>

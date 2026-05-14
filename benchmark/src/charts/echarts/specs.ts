@@ -649,7 +649,7 @@ function buildLatencyDistribution(
     if (row.duration_cost_proxy_ms == null) {
       continue;
     }
-    if (row.endpoint === 'standard' || row.endpoint === 'direct-item') {
+    if (row.endpoint === 'standard') {
       stageBaselineCostByIndex.set(row.stage_index, row.duration_cost_proxy_ms);
     }
   }

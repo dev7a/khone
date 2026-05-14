@@ -4,15 +4,15 @@
   "x_label": "Estimated cost (% of standard)",
   "value_format": "{:.1f}%",
   "x_max": 110,
-  "categories": ["mux", "pct", "standard"],
+  "categories": ["steady", "adaptive", "target-aware", "standard"],
   "series": [
     {
       "label": "Low traffic (1/10/50 rps)",
-      "values": [85.2603, 45.7443, 100]
+      "values": [65.3889, 85.1005, 45.1389, 100]
     },
     {
       "label": "High traffic (50/100/150 rps)",
-      "values": [36.3713, 17.7712, 100]
+      "values": [32.3564, 36.1512, 17.6745, 100]
     }
   ]
 }

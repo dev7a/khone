@@ -1,7 +1,7 @@
 # Tune batching and timeouts
 
 Tune one route at a time and record the workload, target memory, backend delay, `maxWaitMs`,
-`maxBatchSize`, and any adaptive wait settings alongside results.
+`maxBatchSize`, and whether the route uses steady, adaptive, or target-aware batching.
 
 ## Start with conservative bounds
 
@@ -37,10 +37,11 @@ x-khone:
 Batch keys are derived from the original request headers. Header forwarding controls what target
 functions receive, not how isolation keys are read.
 
-## Use duration-based waits for slow or variable targets
+## Use target-aware waits for slow or variable targets
 
-`durationWait` uses periodically refreshed single-request probes, smooths the observed target
-duration, and derives the wait window from that smoothed value.
+`durationWait` is the YAML field for target-aware batching. It uses periodically refreshed
+single-request probes, smooths the observed target duration, and derives the wait window from that
+smoothed value.
 
 ```yaml
 x-khone:

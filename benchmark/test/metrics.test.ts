@@ -13,7 +13,7 @@ test('deriveMetrics includes transport errors and cost parity baseline', async (
   const records = await loadK6Csv(fixtureCsv);
   const metrics = deriveMetrics({
     records,
-    endpointOrder: ['standard', 'mux'],
+    endpointOrder: ['standard', 'adaptive'],
     stages: [{ duration: '3s', target: 2 }],
     executor: 'ramping-arrival-rate',
     mode: 'per_endpoint',
@@ -22,25 +22,25 @@ test('deriveMetrics includes transport errors and cost parity baseline', async (
   });
 
   const standard = metrics.summaryRows.find((row) => row.endpoint === 'standard');
-  const mux = metrics.summaryRows.find((row) => row.endpoint === 'mux');
+  const adaptive = metrics.summaryRows.find((row) => row.endpoint === 'adaptive');
 
   assert.ok(standard);
-  assert.ok(mux);
+  assert.ok(adaptive);
 
   assert.equal(standard.requests, 3);
   assert.equal(standard.errors, 0);
   assert.equal(standard.est_cost_pct_of_direct, 100);
 
-  assert.equal(mux.requests, 3);
-  assert.equal(mux.errors, 2, '500 + transport failure should both count as errors');
-  assert.equal(mux.errors_5xx, 1);
-  assert.equal(mux.error_rate, 2 / 3);
-  assert.equal(mux.est_invocations_per_request, 0.333333);
-  assert.equal(mux.est_cost_pct_of_direct, 33.3333);
+  assert.equal(adaptive.requests, 3);
+  assert.equal(adaptive.errors, 2, '500 + transport failure should both count as errors');
+  assert.equal(adaptive.errors_5xx, 1);
+  assert.equal(adaptive.error_rate, 2 / 3);
+  assert.equal(adaptive.est_invocations_per_request, 0.333333);
+  assert.equal(adaptive.est_cost_pct_of_direct, 33.3333);
 
   assert.equal(metrics.stageDurationCostSeries.length, 2);
   const standardStageCost = metrics.stageDurationCostSeries.find((row) => row.endpoint === 'standard' && row.stage_index === 0);
-  const muxStageCost = metrics.stageDurationCostSeries.find((row) => row.endpoint === 'mux' && row.stage_index === 0);
+  const muxStageCost = metrics.stageDurationCostSeries.find((row) => row.endpoint === 'adaptive' && row.stage_index === 0);
   assert.ok(standardStageCost);
   assert.ok(muxStageCost);
   assert.equal(standardStageCost.duration_cost_pct_of_standard, 100);
@@ -58,8 +58,8 @@ test('deriveMetrics prefers router target elapsed for duration cost when present
         metricValue: 40,
         status: null,
         error: '',
-        extraTags: 'endpoint=mux',
-        endpoint: 'mux',
+        extraTags: 'endpoint=adaptive',
+        endpoint: 'adaptive',
       },
       {
         metricName: 'khone_target_elapsed_ms',
@@ -67,8 +67,8 @@ test('deriveMetrics prefers router target elapsed for duration cost when present
         metricValue: 80,
         status: null,
         error: '',
-        extraTags: 'endpoint=mux',
-        endpoint: 'mux',
+        extraTags: 'endpoint=adaptive',
+        endpoint: 'adaptive',
       },
       {
         metricName: 'khone_target_elapsed_ms',
@@ -76,11 +76,11 @@ test('deriveMetrics prefers router target elapsed for duration cost when present
         metricValue: 20,
         status: null,
         error: '',
-        extraTags: 'endpoint=mux',
-        endpoint: 'mux',
+        extraTags: 'endpoint=adaptive',
+        endpoint: 'adaptive',
       },
     ]),
-    endpointOrder: ['standard', 'mux'],
+    endpointOrder: ['standard', 'adaptive'],
     stages: [{ duration: '3s', target: 2 }],
     executor: 'ramping-arrival-rate',
     mode: 'per_endpoint',
@@ -88,10 +88,10 @@ test('deriveMetrics prefers router target elapsed for duration cost when present
     maxDelayMs: 0,
   });
 
-  const mux = metrics.summaryRows.find((row) => row.endpoint === 'mux');
-  assert.ok(mux);
-  assert.equal(mux.duration_cost_proxy_ms, 40);
-  assert.equal(mux.duration_cost_pct_of_standard, 12.121212);
+  const adaptive = metrics.summaryRows.find((row) => row.endpoint === 'adaptive');
+  assert.ok(adaptive);
+  assert.equal(adaptive.duration_cost_proxy_ms, 40);
+  assert.equal(adaptive.duration_cost_pct_of_standard, 12.121212);
 });
 
 test('deriveMetrics falls back to http duration cost when target elapsed is partial', async () => {
@@ -104,11 +104,11 @@ test('deriveMetrics falls back to http duration cost when target elapsed is part
         metricValue: 40,
         status: null,
         error: '',
-        extraTags: 'endpoint=mux',
-        endpoint: 'mux',
+        extraTags: 'endpoint=adaptive',
+        endpoint: 'adaptive',
       },
     ]),
-    endpointOrder: ['standard', 'mux'],
+    endpointOrder: ['standard', 'adaptive'],
     stages: [{ duration: '3s', target: 2 }],
     executor: 'ramping-arrival-rate',
     mode: 'per_endpoint',
@@ -116,8 +116,8 @@ test('deriveMetrics falls back to http duration cost when target elapsed is part
     maxDelayMs: 0,
   });
 
-  const mux = metrics.summaryRows.find((row) => row.endpoint === 'mux');
-  assert.ok(mux);
-  assert.equal(mux.duration_cost_proxy_ms, 275);
-  assert.equal(mux.duration_cost_pct_of_standard, 83.333333);
+  const adaptive = metrics.summaryRows.find((row) => row.endpoint === 'adaptive');
+  assert.ok(adaptive);
+  assert.equal(adaptive.duration_cost_proxy_ms, 275);
+  assert.equal(adaptive.duration_cost_pct_of_standard, 83.333333);
 });

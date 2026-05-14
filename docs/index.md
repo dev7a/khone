@@ -20,8 +20,9 @@ WAF, or durable workflow orchestration.
   <img alt="Estimated target invocation cost by endpoint, normalized to the standard endpoint" src="assets/performance-cost/cost-estimate-summary-light.svg">
 </picture>
 
-The public benchmark snapshot shows pct at 17.8% of the standard target-invocation cost estimate
-in the high-traffic profile, with higher latency than direct invocation. Start with
+The public benchmark snapshot shows target-aware batching at 17.7% of the standard
+target-invocation cost estimate in the high-traffic profile, with higher latency than direct
+invocation. Start with
 [Performance and cost](explanation/performance-and-cost.md) before reading individual benchmark
 reports.
 

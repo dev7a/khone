@@ -16,7 +16,7 @@ test('parseStageTargets validates input', () => {
 
 test('extractEndpoint reads endpoint tag', () => {
   assert.equal(extractEndpoint('a=1, endpoint=standard, b=2'), 'standard');
-  assert.equal(extractEndpoint('a=1, endpoint=direct-item, b=2'), 'standard');
-  assert.equal(extractEndpoint('a=1, endpoint=mode-a-node-dynamic-item, b=2'), 'mux');
+  assert.equal(extractEndpoint('a=1, endpoint=adaptive, b=2'), 'adaptive');
+  assert.equal(extractEndpoint('a=1, endpoint=target-aware, b=2'), 'target-aware');
   assert.equal(extractEndpoint('foo=bar'), 'unknown');
 });
