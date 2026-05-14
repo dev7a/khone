@@ -1,9 +1,10 @@
-# Observability Reference
+# Observability reference
 
 The gateway exposes OpenTelemetry traces and CloudWatch EMF metrics. It does not export
-OpenTelemetry metrics today.
+OpenTelemetry metrics; when OpenTelemetry tracing is enabled, the gateway sets
+`OTEL_METRICS_EXPORTER=none` if the variable is unset.
 
-## OpenTelemetry Traces
+## OpenTelemetry traces
 
 Tracing is enabled when either endpoint variable is set:
 
@@ -15,24 +16,27 @@ Supported protocols:
 - `http/protobuf`
 - `grpc`
 
-If protocol is not set, the gateway defaults to `grpc` when `OTEL_EXPORTER_OTLP_ENDPOINT` contains
-`localhost:4317`, and `http/protobuf` otherwise.
+Protocol can be set explicitly via `OTEL_EXPORTER_OTLP_TRACES_PROTOCOL` or
+`OTEL_EXPORTER_OTLP_PROTOCOL`. Otherwise the gateway defaults to `grpc` when
+`OTEL_EXPORTER_OTLP_ENDPOINT` contains `localhost:4317`, and `http/protobuf` otherwise.
 
 Common variables:
 
 - `OTEL_SERVICE_NAME`
-- `KHONE_OBSERVABILITY_VENDOR=AWSXRAY`
+- `KHONE_OBSERVABILITY_VENDOR=AWSXRAY` (exact match, case-sensitive)
 - `OTEL_PROPAGATORS` (defaults to `xray,tracecontext,baggage`)
 - `OTEL_EXPORTER_OTLP_HEADERS` or `OTEL_EXPORTER_OTLP_TRACES_HEADERS`
-- `KHONE_OTEL_HEADERS_JSON`
+- `KHONE_OTEL_HEADERS_JSON` — JSON object of header names to string values. The gateway encodes it
+  into `OTEL_EXPORTER_OTLP_HEADERS` at startup if neither headers variable is already set.
 
-## EMF Metrics
+## EMF metrics
 
-Enable EMF with:
+Enable EMF by setting `KHONE_EMF_METRICS` to a truthy value. The truthy parser accepts `1`,
+`true`/`TRUE`, `yes`/`YES`, or `on`/`ON`.
 
-- `KHONE_EMF_METRICS=1`
-- `KHONE_EMF_NAMESPACE=KhoneGateway`
-- `KHONE_EMF_HIGH_RES=1`
+- `KHONE_EMF_METRICS=1` — enable EMF emission.
+- `KHONE_EMF_NAMESPACE=KhoneGateway` — CloudWatch namespace (default `KhoneGateway`).
+- `KHONE_EMF_HIGH_RES=1` — request high storage resolution.
 
 Dimension sets:
 
@@ -40,9 +44,9 @@ Dimension sets:
 - `http.route` + `khone.invoke.mode`
 - `http.route` + `http.request.method` + `http.response.status_code`
 
-## Metric Inventory
+## Metric inventory
 
-| Metric name | Dimensions | Unit |
+| Metric name | Dimensions | Unit (EMF) |
 | --- | --- | --- |
 | `http.server.active_requests` | none | Count |
 | `http.server.request.count` | `http.route`, `http.request.method`, `http.response.status_code` | Count |
@@ -52,8 +56,8 @@ Dimension sets:
 | `khone.lambda.invoke.duration` | `http.route`, `khone.invoke.mode` | Millisecond |
 | `khone.lambda.invoke.billed_duration` | `http.route`, `khone.invoke.mode` | Millisecond |
 | `khone.lambda.invoke.init_duration` | `http.route`, `khone.invoke.mode` | Millisecond |
-| `khone.lambda.memory.size` | `http.route`, `khone.invoke.mode` | Count |
-| `khone.lambda.memory.max_used` | `http.route`, `khone.invoke.mode` | Count |
+| `khone.lambda.memory.size` | `http.route`, `khone.invoke.mode` | Count [^mb] |
+| `khone.lambda.memory.max_used` | `http.route`, `khone.invoke.mode` | Count [^mb] |
 | `khone.batching.invocation_queue.depth` | none | Count |
 | `khone.batching.invocation_queue.rejections` | none | Count |
 | `khone.batching.plan.splits` | `http.route`, `khone.invoke.mode` | Count |
@@ -61,5 +65,18 @@ Dimension sets:
 | `khone.batching.probe.success` | none | Count |
 | `khone.batching.probe.failure` | none | Count |
 
-Profiling metrics require route-level `x-khone.profiling: true`. Profiling asks Lambda for the last
-4 KB of invoke logs and adds overhead.
+[^mb]: Values are in megabytes but emitted without an EMF unit annotation.
+
+Profiling metrics (`billed_duration`, `init_duration`, `memory.size`, `memory.max_used`) require
+route-level `x-khone.profiling: true`. Profiling asks Lambda for the last 4 KB of invoke logs and
+adds overhead.
+
+## Debug response headers
+
+Setting `KHONE_DEBUG_RESPONSE_HEADERS` to a truthy value adds the following headers to every
+gateway response:
+
+- `x-khone-batch-size`
+- `x-khone-target-elapsed-ms`
+
+Use it during integration or load testing only; it leaks internal scheduling information.

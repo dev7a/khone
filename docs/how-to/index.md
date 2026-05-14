@@ -1,4 +1,4 @@
-# How-To Guides
+# How-to guides
 
 How-to guides are task-oriented recipes for deploying, integrating, benchmarking, and tuning the
 gateway.

@@ -1,8 +1,8 @@
-# Integrate Lambda Handlers
+# Integrate Lambda handlers
 
 Khone supports three target Lambda integration modes.
 
-## Use Mode B Adapters For Most Handlers
+## Use Mode B adapters for most handlers
 
 Mode B wraps a single-request handler and maps each batch item into a normal API Gateway HTTP API
 v2 event.
@@ -23,7 +23,7 @@ Rust:
 use std::convert::Infallible;
 
 use aws_lambda_events::event::apigw::ApiGatewayV2httpRequest;
-use khone_lambda_adapter::{batch_adapter, HandlerResponse};
+use khone_lambda_adapter::{batch_adapter, BatchRequestEvent, HandlerResponse};
 
 async fn handler(
     _event: ApiGatewayV2httpRequest,
@@ -31,9 +31,22 @@ async fn handler(
 ) -> Result<HandlerResponse, Infallible> {
     Ok(HandlerResponse::text(200, "ok"))
 }
+
+async fn entrypoint(
+    event: BatchRequestEvent<ApiGatewayV2httpRequest>,
+    ctx: &lambda_runtime::Context,
+) -> Result<serde_json::Value, lambda_runtime::Error> {
+    let adapter = batch_adapter(handler);
+    let response = adapter.handle(event, ctx).await;
+    Ok(serde_json::to_value(response)?)
+}
 ```
 
-## Use Response Streaming When Early Return Matters
+The Node package is `khone-lambda-adapter`; the Rust crate is `khone-lambda-adapter` (depend via
+git or path until publication). Both default `concurrency` to `16`; override with
+`{ concurrency }` or `.with_concurrency(...)`.
+
+## Use response streaming when early return matters
 
 Routes with `invokeMode: response_stream` expect NDJSON response records. The adapters provide
 streaming helpers:
@@ -45,9 +58,14 @@ exports.handler = batchAdapterStream(handler);
 
 ```rust
 use khone_lambda_adapter::batch_adapter_stream;
+
+let adapter = batch_adapter_stream(handler);
 ```
 
-## Use Mode C For Custom Batch Handling
+Enable interleaved per-request chunk streaming with `{ interleaved: true }` (Node) or
+`.with_interleaved(true)` (Rust). See [Interleaved streaming protocol](../reference/interleaved-streaming-protocol.md).
+
+## Use Mode C for custom batch handling
 
 Mode C handlers receive `event.batch` directly and return the gateway protocol documented in
 [Batch and response protocol](../reference/batch-and-response-protocol.md).

@@ -72,9 +72,9 @@ Lambda code sees.
 
 ## Config shape
 
-The `KhoneGateway` macro publishes a small spec to S3. The target Lambda ARN is declared on each
-operation with `x-target-lambda`; per-route batching configuration lives under `x-khone` and is read
-by the gateway at startup.
+The `KhoneGateway` macro publishes a `GatewayConfig` and `Spec` manifest to S3. The gateway reads it
+at startup from `KHONE_CONFIG_URI`. The target Lambda ARN is declared on each operation with
+`x-target-lambda`; per-route batching configuration lives under `x-khone`.
 
 ```yaml
 Spec:
@@ -94,7 +94,7 @@ Spec:
             targetRps: 50
 ```
 
-## Read Next
+## Read next
 
 - [LMI runtime model](lmi-runtime-model.md): why environment lifetime matters here.
 - [Performance and cost](performance-and-cost.md): what the benchmark numbers actually mean.

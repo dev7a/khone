@@ -6,7 +6,6 @@
     "performance-and-cost",
     "integration-modes",
     "lmi-runtime-model",
-    "benchmarking-methodology",
-    "migration-from-apprunner"
+    "benchmarking-methodology"
   ]
 }

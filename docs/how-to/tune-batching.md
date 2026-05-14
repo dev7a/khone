@@ -1,9 +1,9 @@
-# Tune Batching And Timeouts
+# Tune batching and timeouts
 
 Tune one route at a time and record the workload, target memory, backend delay, `maxWaitMs`,
 `maxBatchSize`, and any adaptive wait settings alongside results.
 
-## Start With Conservative Bounds
+## Start with conservative bounds
 
 - Use `maxWaitMs` between 5 and 25 ms for latency-sensitive routes.
 - Use `maxBatchSize` between 4 and 16 for simple handlers.
@@ -22,7 +22,7 @@ paths:
         timeoutMs: 900
 ```
 
-## Isolate Tenants Or Auth Contexts
+## Isolate tenants or auth contexts
 
 Use `x-khone.key` when requests must not be co-batched together.
 
@@ -37,7 +37,7 @@ x-khone:
 Batch keys are derived from the original request headers. Header forwarding controls what target
 functions receive, not how isolation keys are read.
 
-## Use Duration-Based Waits For Slow Or Variable Targets
+## Use duration-based waits for slow or variable targets
 
 `durationWait` uses periodically refreshed single-request probes, smooths the observed target
 duration, and derives the wait window from that smoothed value.
@@ -56,7 +56,7 @@ x-khone:
 The gateway starts from the minimum wait path and updates duration-derived waits after probe
 samples are available.
 
-## Watch Payload Size
+## Watch payload size
 
 `MaxInvokePayloadBytes` defaults to 6 MiB. Keep request bodies small enough for batch payloads to
 fit the Lambda invoke limit. A single request that cannot fit fails.

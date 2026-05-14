@@ -1,4 +1,4 @@
-# Deploy The Demo Stack
+# Deploy the demo stack
 
 The demo stack deploys sample buffered, streaming, adapter, and Mode A routes.
 
@@ -24,7 +24,7 @@ sam deploy --parameter-overrides \
   GatewayCapacityProviderArn="arn:aws:lambda:..."
 ```
 
-## Try The Routes
+## Try the routes
 
 Use `GatewayFunctionUrl` as the base URL:
 

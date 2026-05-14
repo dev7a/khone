@@ -1,28 +1,30 @@
-# LMI Runtime Model
+# LMI runtime model
 
 Lambda Managed Instances lets a Lambda execution environment process multiple concurrent invokes.
 The gateway relies on this to hold in-memory batch state while many Function URL requests are active.
 
-## Execution Environments
+## Execution environments
 
 Each execution environment has its own router, batchers, queues, timers, and probe state. There is
-no cross-environment coordination.
+no cross-environment coordination. Requests can be batched together only when Lambda routes them to
+the same execution environment.
 
 Minimum execution environments provide baseline warm capacity. Maximum execution environments bound
 scale-out and cost exposure.
 
-## Per-Environment Concurrency
+## Per-environment concurrency
 
 `CapacityProviderConfig.PerExecutionEnvironmentMaxConcurrency` controls how many invokes can be
 active in one environment. The gateway should set its own queue and inflight limits below the point
 where target latency or memory pressure becomes unstable.
 
-## In-Memory State
+## In-memory state
 
-State survives while the environment stays alive, but it is not durable. The gateway must tolerate a
-new environment starting with no historical request-rate or duration-probe data.
+The gateway keeps request-rate and duration-probe data in memory while an execution environment is
+alive. A new environment starts without that history, so batching policy can take a brief ramp-up
+period before it reaches the same behavior as a warm environment.
 
-## Scale-Out Effects
+## Scale-out effects
 
 When Lambda adds environments, traffic is split across independent batchers. Effective batch size may
 temporarily drop until each environment has enough traffic and probe data.

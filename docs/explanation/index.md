@@ -8,4 +8,3 @@ Explanation pages describe why the system is shaped the way it is.
 - [Integration modes](integration-modes.md)
 - [LMI runtime model](lmi-runtime-model.md)
 - [Benchmarking methodology](benchmarking-methodology.md)
-- [Migration from App Runner-era assumptions](migration-from-apprunner.md)

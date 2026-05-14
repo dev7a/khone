@@ -1,4 +1,4 @@
-# Khone Docs
+# Khone docs
 
 Khone is an HTTP microbatching gateway for AWS Lambda. It batches short-lived HTTP requests by
 route, target, invoke mode, profiling setting, and optional key dimensions, then invokes target
@@ -12,7 +12,7 @@ Khone is most relevant when request grouping can reduce target Lambda work enoug
 extra gateway hop. It is not a replacement for API Gateway features such as auth, custom domains,
 WAF, or durable workflow orchestration.
 
-## Performance Snapshot
+## Performance snapshot
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="assets/performance-cost/cost-estimate-summary-dark.svg">
@@ -25,7 +25,7 @@ in the high-traffic profile, with higher latency than direct invocation. Start w
 [Performance and cost](explanation/performance-and-cost.md) before reading individual benchmark
 reports.
 
-## Start Here
+## Start here
 
 - [Project scope](explanation/project-scope.md): understand what this project does and does not
   provide.
@@ -38,7 +38,7 @@ reports.
 - [Configuration reference](reference/config.md): author `GatewayConfig`, `Spec`, and `x-khone`.
 - [Architecture](explanation/architecture.md): understand the request, batching, and response flow.
 
-## Reviewer Path
+## Reviewer path
 
 Read these pages in order to understand the scope of the service:
 
@@ -49,13 +49,13 @@ Read these pages in order to understand the scope of the service:
 5. [Performance and cost](explanation/performance-and-cost.md)
 6. [Benchmarking methodology](explanation/benchmarking-methodology.md)
 
-## Documentation Map
+## Documentation map
 
 ### Tutorials
 
 - [First LMI deployment](tutorials/first-lmi-deployment.md)
 
-### How-To Guides
+### How-to guides
 
 - [Deploy your own SAM gateway](how-to/deploy-your-own-sam-gateway.md)
 - [Deploy the demo stack](how-to/deploy-demo-stack.md)
@@ -83,7 +83,6 @@ Read these pages in order to understand the scope of the service:
 - [Integration modes](explanation/integration-modes.md)
 - [LMI runtime model](explanation/lmi-runtime-model.md)
 - [Benchmarking methodology](explanation/benchmarking-methodology.md)
-- [Migration from App Runner-era assumptions](explanation/migration-from-apprunner.md)
 
 ## Status
 

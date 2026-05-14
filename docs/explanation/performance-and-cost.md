@@ -1,14 +1,14 @@
-# Performance and Cost
+# Performance and cost
 
 The benchmark results are important because Khone exists to trade a small amount of gateway latency
 for fewer target Lambda invocations. The public benchmark snapshot should be read in that frame:
 mux and pct are useful when batching reduces enough downstream work to justify the extra hop.
 
-The charts below summarize the curated public runs at 256 MB target-function memory, with the
-gateway running on LMI and using a minimum of four execution environments during the final benchmark
-pass. Round 2 is shown because it reduces first-round scale and empty-state effects.
+The charts below summarize benchmark runs at 256 MB target-function memory, with the gateway running
+on LMI and using a minimum of four execution environments during the final benchmark pass. Round 2
+is shown because it reduces first-round scale and empty-state effects.
 
-## Scenario Metadata
+## Scenario metadata
 
 | Setting | Value |
 | :-- | :-- |
@@ -22,7 +22,7 @@ pass. Round 2 is shown because it reduces first-round scale and empty-state effe
 | High traffic profile | 3m ramping 0 to 50 rps, then 3m ramping 50 to 100 rps, then 3m ramping 100 to 150 rps |
 | Error rate in round 2 summaries | `0.000%` for mux, pct, and standard |
 
-## Cost Summary
+## Cost summary
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="../assets/performance-cost/cost-estimate-summary-dark.svg">
@@ -45,7 +45,7 @@ profile.
 | High, 50/100/150 rps | pct | 470 ms | 17.8% |
 | High, 50/100/150 rps | standard | 202 ms | 100.0% |
 
-## Latency Summary
+## Latency summary
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="../assets/performance-cost/p95-latency-summary-dark.svg">
@@ -63,12 +63,12 @@ lowest estimated target invocation cost.
 | Low, 1/10/50 rps | 275 ms | 460 ms | 198 ms |
 | High, 50/100/150 rps | 302 ms | 470 ms | 202 ms |
 
-## Generated Benchmark Charts
+## Generated benchmark charts
 
-These are the generated PNG charts from the curated public reports. They show sampled latency over
-time, per-stage cost bars, and heatmap summaries for each endpoint.
+These generated charts show sampled latency over time, per-stage cost bars, and heatmap summaries
+for each endpoint.
 
-### Low Traffic, Round 2
+### Low traffic, round 2
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="../../benchmark-results-public/low-256mb-min4-1-10-50-round2/charts/dark/latency-distribution.png">
@@ -76,7 +76,7 @@ time, per-stage cost bars, and heatmap summaries for each endpoint.
   <img alt="Low traffic benchmark latency distribution and stage cost by endpoint" src="../../benchmark-results-public/low-256mb-min4-1-10-50-round2/charts/light/latency-distribution.png">
 </picture>
 
-### High Traffic, Round 2
+### High traffic, round 2
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="../../benchmark-results-public/high-256mb-min4-50-100-150-round2/charts/dark/latency-distribution.png">
@@ -84,7 +84,7 @@ time, per-stage cost bars, and heatmap summaries for each endpoint.
   <img alt="High traffic benchmark latency distribution and stage cost by endpoint" src="../../benchmark-results-public/high-256mb-min4-50-100-150-round2/charts/light/latency-distribution.png">
 </picture>
 
-## What the Estimate Includes
+## What the estimate includes
 
 The benchmark cost estimate focuses on target Lambda invocation work. It uses gateway-observed
 batch sizes and target response wait time instead of raw client HTTP duration, because client
@@ -97,11 +97,9 @@ The estimate is still not a substitute for an AWS bill:
 - It does not use Lambda `REPORT` billed duration for every target invocation.
 - It is best used for relative scenario comparison, not absolute pricing.
 
-## Public Report Links
+## Public report links
 
 - [High traffic, round 1](../../benchmark-results-public/high-256mb-min4-50-100-150-round1/report.md)
 - [High traffic, round 2](../../benchmark-results-public/high-256mb-min4-50-100-150-round2/report.md)
 - [Low traffic, round 1](../../benchmark-results-public/low-256mb-min4-1-10-50-round1/report.md)
 - [Low traffic, round 2](../../benchmark-results-public/low-256mb-min4-1-10-50-round2/report.md)
-
-Each public report contains sanitized scenario metadata, summary CSV output, and themed latency distribution charts. Raw URLs, account IDs, ARNs, sampled time series, and full metric logs are intentionally excluded from public bundles.
