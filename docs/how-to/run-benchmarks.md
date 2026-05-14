@@ -1,18 +1,18 @@
-# Run Benchmarks
+# Run benchmarks
 
 Use `benchviz` to run k6 and generate reports from the benchmark stack.
 
-For the curated public result narrative, see
+For the benchmark result narrative, see
 [Performance and cost](../explanation/performance-and-cost.md). This guide is about producing and
-publishing benchmark artifacts.
+reviewing benchmark artifacts.
 
-## Install Dependencies
+## Install dependencies
 
 ```bash
 npm --prefix benchmark install
 ```
 
-## Run The Default Sweep
+## Run the default sweep
 
 ```bash
 npm --prefix benchmark run benchviz -- run \
@@ -23,7 +23,7 @@ npm --prefix benchmark run benchviz -- run \
   --max-delay-ms 0
 ```
 
-## Run A Smoke Test
+## Run a smoke test
 
 ```bash
 npm --prefix benchmark run benchviz -- run \
@@ -36,7 +36,7 @@ npm --prefix benchmark run benchviz -- run \
   --max-delay-ms 0
 ```
 
-## Render From An Existing CSV
+## Render from an existing CSV
 
 ```bash
 npm --prefix benchmark run benchviz -- run \
@@ -46,10 +46,10 @@ npm --prefix benchmark run benchviz -- run \
   --themes light-transparent,dark-transparent
 ```
 
-## Generate A Curated Public Bundle
+## Generate a shareable report bundle
 
-Use a stable, descriptive `--public-run-name` when the bundle may be published. Do not publish
-generated timestamp directory names.
+Use a stable, descriptive `--public-run-name` for report bundles you want to keep or share. Avoid
+generated timestamp directory names when the result should be easy to compare later.
 
 ```bash
 npm --prefix benchmark run benchviz -- run \
@@ -60,12 +60,12 @@ npm --prefix benchmark run benchviz -- run \
   --themes light-transparent,dark-transparent
 ```
 
-The public bundle contains only:
+The report bundle contains:
 
 - `report.md`
 - `summary.csv`
 - `charts/light/latency-distribution.png` with light colors and a transparent background
 - `charts/dark/latency-distribution.png` with dark colors and a transparent background
 
-Raw `run.json`, `k6.csv`, `benchviz.log`, and `data/metrics.json` stay private under
-`benchmark-results/`.
+The raw run directory still contains additional files such as `run.json`, `k6.csv`, `benchviz.log`,
+and `data/metrics.json`.

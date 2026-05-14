@@ -1,4 +1,4 @@
-# Benchmarking Methodology
+# Benchmarking methodology
 
 Benchmarks compare the gateway routes against a standard API Gateway HTTP API baseline under the
 same workload shape.
@@ -25,15 +25,9 @@ The reports derive:
 - estimated target invocation count.
 - estimated relative cost.
 
-## Cost Estimates Are Not Bills
+## Cost estimates are not bills
 
 The estimate uses observed batch size and router-measured target elapsed time when available. It is
 a workload-efficiency proxy, not Lambda billed duration. Real cost depends on target runtime,
 memory, architecture, request duration, and AWS pricing. It also excludes gateway LMI capacity cost,
 Function URL/API Gateway charges, CloudWatch, networking, and other account-level charges.
-
-## Public Results
-
-Public benchmark bundles are curated. They should include enough metadata to interpret the run, but
-not raw URLs, ARNs, account IDs, raw sampled series, full deployment metadata, or exact generation
-timestamps.

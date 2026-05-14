@@ -1,4 +1,4 @@
-# Deploy The Benchmark Stack
+# Deploy the benchmark stack
 
 The benchmark stack deploys a dedicated LMI gateway, two Mode A target handlers, a standard
 API Gateway HTTP API baseline, and a shared backend Lambda URL workload.
@@ -23,7 +23,7 @@ make benchmark-sam-deploy \
   BENCHMARK_HANDLER_MEMORY_SIZE=512
 ```
 
-## Outputs Used By Benchmark Tooling
+## Outputs used by benchmark tooling
 
 - `BenchmarkTargetsJson`: preferred explicit list of benchmark endpoints.
 - `BenchmarkEndpointsCsv`: optional endpoint name list.
@@ -33,7 +33,7 @@ make benchmark-sam-deploy \
 
 These outputs are consumed by the `benchviz` CLI.
 
-## Cost-Relevant Metrics
+## Cost-relevant metrics
 
 The stack publishes CloudWatch Logs metric filters for Lambda `platform.report` events:
 
@@ -41,4 +41,7 @@ The stack publishes CloudWatch Logs metric filters for Lambda `platform.report` 
 - `PCTBilledDurationMs`
 - `STDBilledDurationMs`
 
-Gateway EMF metrics can also be enabled with `EmfMetricsEnabled=true`.
+Additional template parameters (`EmfMetricsEnabled`, `ObservabilityEnabled`,
+`BenchmarkBackendBaseDelayMs`, and others) are not forwarded by `make benchmark-sam-deploy`, which
+only passes `KhoneLayerArm64Arn`, `GatewayCapacityProviderArn`, and `BenchmarkHandlerMemorySize`.
+To set them, run `sam deploy` directly from `benchmark/sam/`.
