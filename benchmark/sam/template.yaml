@@ -445,12 +445,6 @@ Outputs:
   BenchmarkTargetsJson:
     Value: !Sub '[{"name":"steady","url":"${GatewayFunctionUrl.FunctionUrl}steady"},{"name":"adaptive","url":"${GatewayFunctionUrl.FunctionUrl}adaptive"},{"name":"target-aware","url":"${GatewayFunctionUrl.FunctionUrl}target-aware"},{"name":"standard","url":"https://${DirectHttpApi}.execute-api.${AWS::Region}.amazonaws.com/std"}]'
 
-  ModeANodeFunctionArn:
-    Value: !GetAtt AdaptiveFunction.Arn
-
-  DirectItemFunctionArn:
-    Value: !GetAtt STDFunction.Arn
-
   SteadyFunctionArn:
     Value: !GetAtt SteadyFunction.Arn
 
@@ -469,9 +463,6 @@ Outputs:
   GatewayServiceConfigS3Uri:
     Value: !GetAtt GatewayService.ConfigS3Uri
 
-  ModeANodeDynamicItemUrl:
-    Value: !Sub "${GatewayFunctionUrl.FunctionUrl}adaptive"
-
   SteadyUrl:
     Value: !Sub "${GatewayFunctionUrl.FunctionUrl}steady"
 
@@ -480,9 +471,6 @@ Outputs:
 
   TargetAwareUrl:
     Value: !Sub "${GatewayFunctionUrl.FunctionUrl}target-aware"
-
-  DirectItemUrl:
-    Value: !Sub "https://${DirectHttpApi}.execute-api.${AWS::Region}.amazonaws.com/std"
 
   StandardUrl:
     Value: !Sub "https://${DirectHttpApi}.execute-api.${AWS::Region}.amazonaws.com/std"
