@@ -14,10 +14,11 @@ export default function HomePage() {
             <div className="copy">
               <span className="eyebrow">
                 <span className="dot" />
-                χώνη · funnel · Greek
+                χώνη · funnel
               </span>
               <h1 className="h-display">
-                An HTTP microbatching gateway for <em>AWS Lambda</em>.
+                An HTTP <span className="hero-break">microbatching</span> gateway for{' '}
+                <em>AWS Lambda.</em>
               </h1>
               <p className="lead">
                 Khone buffers requests by route and batching dimensions for a few milliseconds,
@@ -67,22 +68,24 @@ export default function HomePage() {
                 The gateway is a Rust Lambda Function URL router running on Lambda Managed
                 Instances. It accepts HTTP, batches inside each execution environment, invokes the
                 target with batched payloads, and demultiplexes per-request responses back to
-                clients. Oversized payloads are split before invocation.
+                clients. Batches that exceed the invoke payload limit are split before invocation
+                when possible.
               </p>
             </div>
             <div className="arch">
               {[
-                ['01', 'Client request', 'HTTP arrives at the gateway via Lambda Function URL with RESPONSE_STREAM invoke mode.'],
+                ['01', 'HTTP requests', 'HTTP requests arrive at the gateway via Lambda Function URL with RESPONSE_STREAM invoke mode.'],
                 ['02', 'Route match', 'A compiled route from Spec.paths identifies the target Lambda, method, and key dimensions.'],
                 ['03', 'Microbatch', 'In-memory queue per target, route, mode, and key flushes when maxBatchSize, maxWaitMs, or an adaptive policy fires.'],
-                ['04', 'Target Lambda', 'One or more invocations receive the batched payload. Buffered JSON or NDJSON streaming responses come back.'],
-                ['05', 'Demultiplex', 'The gateway maps each response id back to the waiting client request and streams it home.'],
+                ['04', 'Target Lambda', 'One or more invocations receive the batched payload and process every item in a single execution context.'],
+                ['05', 'Streaming response', 'Buffered JSON returns one reply per batch; NDJSON streams per-item events as the handler produces them.'],
+                ['06', 'Demultiplex', 'The gateway maps each response id back to the waiting client request and streams it home.'],
               ].map(([num, name, desc], index) => (
                 <div className={index === 2 ? 'step batch' : 'step'} key={num}>
                   <span className="num">{num}</span>
                   <span className="name">{name}</span>
                   <span className="desc">{desc}</span>
-                  {index < 4 ? (
+                  {index < 5 ? (
                     <svg className="mark" width="20" height="20" viewBox="0 0 20 20" fill="none">
                       <path d="M3 10h12m0 0L11 6m4 4L11 14" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
@@ -128,7 +131,7 @@ export default function HomePage() {
               <article className="mode-card">
                 <div className="head">
                   <span className="tag">Mode B</span>
-                  <span className="pill">Default</span>
+                  <span className="pill">Add an SDK</span>
                 </div>
                 <h3>Adapter</h3>
                 <span className="mode-subtitle">Mode B</span>

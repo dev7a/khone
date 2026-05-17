@@ -83,7 +83,7 @@ export function SiteFooter() {
             <br />
             Pronounced <span>KOH-nay</span>.
             <br />
-            Apache 2.0 · Experimental.
+            MIT · Experimental.
           </p>
         </div>
         <div className="col">

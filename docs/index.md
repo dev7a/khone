@@ -2,7 +2,8 @@
 
 Khone is an HTTP microbatching gateway for AWS Lambda. It batches short-lived HTTP requests by
 route, target, invoke mode, profiling setting, and optional key dimensions, then invokes target
-Lambda functions with batched payloads. Oversized payloads are split before invocation when needed.
+Lambda functions with batched payloads. Batches that exceed the invoke payload limit are split
+before invocation when possible.
 
 The current deployment model is Lambda Managed Instances (LMI), SAM zip packaging with
 `rust-cargolambda`, a response-streaming Lambda Function URL, and an explicit user-owned gateway
