@@ -658,9 +658,7 @@ export function BatchingSimulator() {
         <div className="sim-control">
           <div className="row">
             <label htmlFor="sim-clients">clients</label>
-            <span className="val">
-              {config.clients} <span>rps</span>
-            </span>
+            <span className="val">{config.clients}</span>
           </div>
           <input
             id="sim-clients"
