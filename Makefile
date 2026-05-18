@@ -78,7 +78,7 @@ examples-sam-build: check-example-template
 examples-sam-deploy: check check-capacity-provider examples-sam-build
 	@set -euo pipefail; \
 	deploy_params=(GatewayCapacityProviderArn="$(CFN_GATEWAY_CAPACITY_PROVIDER_ARN)"); \
-	if grep -q '^  KhoneLayerArm64Arn:' "$(EXAMPLE_TEMPLATE_DIR)/template.yaml"; then \
+	if grep -q '^[[:space:]]*KhoneLayerArm64Arn:' "$(EXAMPLE_TEMPLATE_DIR)/template.yaml"; then \
 		layer_arn="$$(aws cloudformation list-exports --region "$(AWS_REGION)" --query "Exports[?Name=='KhoneLayerArm64Arn'].Value | [0]" --output text)"; \
 		if [[ -z "$$layer_arn" || "$$layer_arn" == "None" ]]; then \
 			echo "Failed to resolve KhoneLayerArm64Arn export. Run make bootstrap-deploy first."; \
