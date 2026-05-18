@@ -1,9 +1,8 @@
 # Performance and cost
 
-The benchmark results are important because Khone exists to trade a small amount of gateway latency
-for fewer target Lambda invocations. The public benchmark snapshot should be read in that frame:
-steady, adaptive, and target-aware batching are useful when batching reduces enough downstream work
-to justify the extra hop.
+Khone trades a small amount of gateway latency for fewer target Lambda invocations, so read the
+public benchmark snapshot in that frame: steady, adaptive, and target-aware batching are useful
+when batching reduces enough downstream work to justify the extra hop.
 
 The charts below summarize benchmark runs at 256 MB target-function memory, with the gateway running
 on LMI and using a minimum of four execution environments during the final benchmark pass. Round 2
@@ -88,6 +87,17 @@ for each endpoint. They are the public chart artifacts from the round 2 benchmar
   <source media="(prefers-color-scheme: light)" srcset="../../benchmark-results-public/high-256mb-min4-50-100-150-round2/charts/light/latency-distribution.png">
   <img alt="High traffic benchmark latency distribution and stage cost by endpoint" src="../../benchmark-results-public/high-256mb-min4-50-100-150-round2/charts/light/latency-distribution.png">
 </picture>
+
+## Concurrency and cold starts
+
+A second-order effect of batching: fewer concurrent target invocations means fewer execution
+environments, which means fewer cold starts. Spikes that would otherwise force Lambda to spin up
+new sandboxes can often be absorbed by the warm ones already handling batches — the same warm
+sandbox just processes a larger batch instead of a peer being cold-started next to it.
+
+This effect is workload-dependent and is not directly measured by the public benchmark. It only
+shows up when traffic has enough concurrency to batch in the first place, and it largely disappears
+for routes that already run at steady high concurrency on a stable footprint.
 
 ## What the estimate includes
 

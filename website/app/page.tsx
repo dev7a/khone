@@ -14,15 +14,17 @@ export default function HomePage() {
             <div className="copy">
               <span className="eyebrow">
                 <span className="dot" />
-                χώνη · funnel · Greek
+                χώνη · funnel
               </span>
               <h1 className="h-display">
-                An HTTP microbatching gateway for <em>AWS Lambda</em>.
+                An HTTP <span className="hero-break">microbatching</span> gateway for{' '}
+                <em>AWS Lambda.</em>
               </h1>
               <p className="lead">
                 Khone buffers requests by route and batching dimensions for a few milliseconds,
                 invokes Lambda with batched payloads, and routes each per-request response back to
-                the original caller. It&apos;s a configurable latency-vs-cost dial.
+                the original caller. It deliberately trades a few milliseconds per request for a
+                smaller bill and fewer cold starts. That&apos;s the whole pitch.
               </p>
               <div className="cta-row">
                 <Link className="btn primary" href="/docs/tutorials/first-lmi-deployment/">
@@ -67,22 +69,24 @@ export default function HomePage() {
                 The gateway is a Rust Lambda Function URL router running on Lambda Managed
                 Instances. It accepts HTTP, batches inside each execution environment, invokes the
                 target with batched payloads, and demultiplexes per-request responses back to
-                clients. Oversized payloads are split before invocation.
+                clients. Batches that exceed the invoke payload limit are split before invocation
+                when possible.
               </p>
             </div>
             <div className="arch">
               {[
-                ['01', 'Client request', 'HTTP arrives at the gateway via Lambda Function URL with RESPONSE_STREAM invoke mode.'],
+                ['01', 'HTTP requests', 'HTTP requests arrive at the gateway via Lambda Function URL with RESPONSE_STREAM invoke mode.'],
                 ['02', 'Route match', 'A compiled route from Spec.paths identifies the target Lambda, method, and key dimensions.'],
                 ['03', 'Microbatch', 'In-memory queue per target, route, mode, and key flushes when maxBatchSize, maxWaitMs, or an adaptive policy fires.'],
-                ['04', 'Target Lambda', 'One or more invocations receive the batched payload. Buffered JSON or NDJSON streaming responses come back.'],
-                ['05', 'Demultiplex', 'The gateway maps each response id back to the waiting client request and streams it home.'],
+                ['04', 'Target Lambda', 'One or more invocations receive the batched payload and process every item in a single execution context.'],
+                ['05', 'Streaming response', 'Buffered JSON returns one reply per batch; NDJSON streams per-item events as the handler produces them.'],
+                ['06', 'Demultiplex', 'The gateway maps each response id back to the waiting client request and streams it home.'],
               ].map(([num, name, desc], index) => (
                 <div className={index === 2 ? 'step batch' : 'step'} key={num}>
                   <span className="num">{num}</span>
                   <span className="name">{name}</span>
                   <span className="desc">{desc}</span>
-                  {index < 4 ? (
+                  {index < 5 ? (
                     <svg className="mark" width="20" height="20" viewBox="0 0 20 20" fill="none">
                       <path d="M3 10h12m0 0L11 6m4 4L11 14" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
@@ -122,13 +126,13 @@ export default function HomePage() {
                 <ul className="features">
                   <li>Drop-in for legacy handlers</li>
                   <li>Runtime-specific (Node, Python)</li>
-                  <li>Best for stacks you can&apos;t touch</li>
+                  <li>Best when changing the handler is somebody else&apos;s problem</li>
                 </ul>
               </article>
               <article className="mode-card">
                 <div className="head">
                   <span className="tag">Mode B</span>
-                  <span className="pill">Default</span>
+                  <span className="pill">Add an SDK</span>
                 </div>
                 <h3>Adapter</h3>
                 <span className="mode-subtitle">Mode B</span>
@@ -266,8 +270,11 @@ exports.handler = batchAdapter(handleItem);`}</code>
                 The public benchmark normalizes target invocation cost to the standard endpoint,
                 an API Gateway HTTP API plus Lambda baseline, at 100%. In the high-traffic profile,
                 <em>target-aware</em> batching delivered the lowest estimated target cost. The
-                standard endpoint stays fastest because it avoids the gateway hop; Khone&apos;s value is
-                the cost/throughput tradeoff, not minimum single-request latency.
+                standard endpoint stays fastest because it avoids the gateway hop; asking a gateway
+                to beat no gateway on latency was always going to be a losing fight. Khone trades
+                some of that latency for a smaller bill — and, as a side effect, traffic spikes
+                tend to land on warm sandboxes that are already chewing through a batch, rather
+                than forcing fresh cold starts next door.
               </p>
             </div>
 
@@ -335,7 +342,8 @@ exports.handler = batchAdapter(handleItem);`}</code>
                 <h2 className="section-title">Read your way in.</h2>
               </div>
               <p className="lede">
-                Public docs follow Diátaxis. Start with project scope and architecture; deploy via
+                Public docs follow Diátaxis. If a page feels misfiled, the framework is probably
+                more right than the author. Start with project scope and architecture; deploy via
                 the LMI tutorial; tune via the configuration reference.
               </p>
             </div>
