@@ -1,0 +1,161 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="640" viewBox="0 0 1280 640">
+  <defs>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap");
+      .sans { font-family: "Geist", Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; }
+      .mono { font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    </style>
+
+    <pattern id="grid" width="64" height="64" patternUnits="userSpaceOnUse">
+      <path d="M0 0 H64 M0 0 V64" fill="none" stroke="#2a2622" stroke-width="1"/>
+    </pattern>
+
+    <radialGradient id="gridFade" cx="50%" cy="55%" r="60%">
+      <stop offset="0" stop-color="white" stop-opacity="1"/>
+      <stop offset="0.85" stop-color="white" stop-opacity="0.05"/>
+      <stop offset="1" stop-color="white" stop-opacity="0"/>
+    </radialGradient>
+    <mask id="gridMask" maskUnits="userSpaceOnUse" x="0" y="0" width="1280" height="640">
+      <rect width="1280" height="640" fill="url(#gridFade)"/>
+    </mask>
+
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#e3a050" stop-opacity="0.22"/>
+      <stop offset="0.7" stop-color="#e3a050" stop-opacity="0"/>
+    </radialGradient>
+
+    <linearGradient id="funGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#e3a050" stop-opacity="0.18"/>
+      <stop offset="1" stop-color="#e3a050" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1280" height="640" fill="#0c0b0a"/>
+
+  <!-- Grid with radial fade -->
+  <rect width="1280" height="640" fill="url(#grid)" mask="url(#gridMask)" opacity="0.7"/>
+
+  <!-- Horizon glow at bottom -->
+  <ellipse cx="640" cy="680" rx="550" ry="200" fill="url(#glow)"/>
+
+  <!-- Brand (top:56, left:64) -->
+  <g transform="translate(64 56)">
+    <g stroke="#ece8df" fill="none" stroke-linejoin="round" transform="scale(1.5)">
+      <path d="M3 5 L21 5 L15 14 L15 21 L9 21 L9 14 Z" stroke-width="1.6"/>
+      <path d="M6.5 8.5 L17.5 8.5" stroke-width="1" stroke-linecap="round" opacity="0.55"/>
+    </g>
+    <text class="sans" x="50" y="29" fill="#ece8df" font-size="30" font-weight="500" letter-spacing="-0.75">khone</text>
+    <text class="mono" x="156" y="29" fill="#5d584f" font-size="14">/koʊ.neɪ/</text>
+  </g>
+
+  <!-- Status (top:64, right:64) -->
+  <g transform="translate(1216 64)">
+    <text class="mono" x="0" y="14" fill="#8a857a" font-size="13" letter-spacing="2.08" text-anchor="end">EXPERIMENTAL · MIT</text>
+    <circle cx="-228" cy="9" r="4" fill="#e3a050"/>
+    <circle cx="-228" cy="9" r="9" fill="#e3a050" opacity="0.14"/>
+  </g>
+
+  <!-- Body left column: eyebrow + headline. body inset top=168 -->
+  <g transform="translate(64 168)">
+    <!-- Eyebrow -->
+    <g>
+      <circle cx="3" cy="11" r="2.5" fill="#e3a050"/>
+      <circle cx="3" cy="11" r="5.5" fill="#e3a050" opacity="0.14"/>
+      <text class="sans" x="18" y="16" fill="#c8c3b8" font-size="14">χώνη</text>
+      <text class="mono" x="66" y="16" fill="#8a857a" font-size="12.5" letter-spacing="2.25">· FUNNEL · GREEK</text>
+    </g>
+
+    <!-- H1: 80px weight 500, line-height ~0.98, letter-spacing -2.8 -->
+    <g class="sans" font-size="80" font-weight="500" letter-spacing="-2.8" fill="#ece8df">
+      <text x="0" y="100">An HTTP</text>
+      <text x="0" y="178">microbatching</text>
+      <text x="0" y="256">gateway for</text>
+      <text x="0" y="334" fill="#8a857a">AWS Lambda.</text>
+    </g>
+  </g>
+
+  <!-- Diagram column: 460 wide × 360 tall, x=756, y centred in body (168..484) → y=146 -->
+  <g transform="translate(756 146)">
+    <!-- Connectors (frame viewBox 0..460 × 0..360) -->
+    <g fill="none">
+      <path d="M118 80 Q200 120 222 178" stroke="#e3a050" stroke-opacity="0.28" stroke-width="1.2" stroke-dasharray="2 4" stroke-linecap="round"/>
+      <path d="M118 280 Q200 240 222 188" stroke="#e3a050" stroke-opacity="0.28" stroke-width="1.2" stroke-dasharray="2 4" stroke-linecap="round"/>
+      <circle cx="170" cy="118" r="2" fill="#e3a050"/>
+      <circle cx="195" cy="148" r="2" fill="#e3a050" opacity="0.7"/>
+      <circle cx="170" cy="252" r="2" fill="#e3a050" opacity="0.6"/>
+      <path d="M286 184 L370 184" stroke="#e3a050" stroke-opacity="0.5" stroke-width="1.4" stroke-dasharray="3 5" stroke-linecap="round"/>
+      <circle cx="316" cy="184" r="2.5" fill="#e3a050"/>
+      <circle cx="342" cy="184" r="2.5" fill="#e3a050" opacity="0.7"/>
+    </g>
+
+    <!-- Top hex cluster (top:24, left:8) -->
+    <g transform="translate(8 24)">
+      <g stroke="#8a857a" stroke-width="1.2" fill="none">
+        <path d="M60 12 L75.6 21 L75.6 39 L60 48 L44.4 39 L44.4 21 Z"/>
+        <path d="M90 30 L105.6 39 L105.6 57 L90 66 L74.4 57 L74.4 39 Z"/>
+        <path d="M30 30 L45.6 39 L45.6 57 L30 66 L14.4 57 L14.4 39 Z"/>
+        <path d="M60 48 L75.6 57 L75.6 75 L60 84 L44.4 75 L44.4 57 Z"/>
+        <path d="M90 66 L105.6 75 L105.6 93 L90 102 L74.4 93 L74.4 75 Z"/>
+      </g>
+      <circle cx="60" cy="66" r="2" fill="#e3a050"/>
+      <circle cx="90" cy="48" r="1.6" fill="#e3a050" opacity="0.7"/>
+      <circle cx="30" cy="48" r="1.6" fill="#e3a050" opacity="0.5"/>
+    </g>
+
+    <!-- Bottom hex cluster (bottom:24, left:8) → top = 360-24-120 = 216 -->
+    <g transform="translate(8 216)">
+      <g stroke="#8a857a" stroke-width="1.2" fill="none">
+        <path d="M30 12 L45.6 21 L45.6 39 L30 48 L14.4 39 L14.4 21 Z"/>
+        <path d="M60 30 L75.6 39 L75.6 57 L60 66 L44.4 57 L44.4 39 Z"/>
+        <path d="M90 12 L105.6 21 L105.6 39 L90 48 L74.4 39 L74.4 21 Z"/>
+        <path d="M30 48 L45.6 57 L45.6 75 L30 84 L14.4 75 L14.4 57 Z"/>
+        <path d="M90 48 L105.6 57 L105.6 75 L90 84 L74.4 75 L74.4 57 Z"/>
+        <path d="M60 66 L75.6 75 L75.6 93 L60 102 L44.4 93 L44.4 75 Z"/>
+      </g>
+      <circle cx="60" cy="48" r="2" fill="#e3a050"/>
+      <circle cx="30" cy="66" r="1.6" fill="#e3a050" opacity="0.6"/>
+      <circle cx="90" cy="30" r="1.6" fill="#e3a050" opacity="0.7"/>
+    </g>
+
+    <!-- Center funnel (left:178, top:134, 110x110) -->
+    <g transform="translate(178 134)">
+      <rect x="6" y="6" width="98" height="98" rx="14" fill="url(#funGrad)" stroke="#e3a050" stroke-width="1.4"/>
+      <g transform="translate(31 28)" stroke="#e3a050" stroke-width="2" fill="none" stroke-linejoin="round" stroke-linecap="round">
+        <path d="M2 4 L46 4 L31 24 L31 50 L17 50 L17 24 Z"/>
+        <path d="M9 9 L39 9" stroke-opacity="0.5" stroke-width="1.4"/>
+      </g>
+    </g>
+
+    <!-- λ target (right:0, top:144, 88x88) → left = 460-88 = 372 -->
+    <g transform="translate(372 144)">
+      <circle cx="44" cy="44" r="38" stroke="#8a857a" stroke-width="1.2" fill="none"/>
+      <circle cx="44" cy="44" r="34" stroke="#e3a050" stroke-width="1.2" stroke-opacity="0.4" fill="none"/>
+      <g stroke="#c8c3b8" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.92">
+        <path d="M26 24 Q31 21 35 24"/>
+        <path d="M33 24 L62 66"/>
+        <path d="M46 44 L26 66"/>
+      </g>
+      <text class="mono" x="44" y="108" fill="#5d584f" font-size="11" letter-spacing="1.76" text-anchor="middle">λ TARGET</text>
+    </g>
+
+    <!-- Tier labels at bottom: y just below the 360 box -->
+    <g class="mono" font-size="10.5" fill="#5d584f" letter-spacing="1.89">
+      <text x="0" y="368">CLIENTS</text>
+      <text x="220" y="368" text-anchor="middle">KHONE</text>
+      <text x="460" y="368" text-anchor="end">λ SERVICES</text>
+    </g>
+  </g>
+
+  <!-- Footer (bottom:64, left:64, right:64) -->
+  <g transform="translate(64 552)">
+    <!-- Runtime tag -->
+    <text class="mono" x="0" y="0" fill="#5d584f" font-size="11" letter-spacing="1.54">RUNTIME</text>
+    <text class="mono" x="0" y="22" fill="#c8c3b8" font-size="13" letter-spacing="0.52">Rust · LMI</text>
+    <!-- Interface tag -->
+    <text class="mono" x="120" y="0" fill="#5d584f" font-size="11" letter-spacing="1.54">INTERFACE</text>
+    <text class="mono" x="120" y="22" fill="#c8c3b8" font-size="13" letter-spacing="0.52">Function URL · RESPONSE_STREAM</text>
+    <!-- URL right-aligned -->
+    <text class="mono" x="1152" y="22" fill="#8a857a" font-size="14" letter-spacing="0.56" text-anchor="end">dev7a.github.io/<tspan fill="#ece8df" font-weight="500">khone</tspan></text>
+  </g>
+</svg>
