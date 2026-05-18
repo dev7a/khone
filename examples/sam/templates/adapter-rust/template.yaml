@@ -25,6 +25,13 @@ Parameters:
 Conditions:
   OtelEnabled: !Not [!Equals [!Ref OtelTracesEndpoint, ""]]
 
+Globals:
+  Function:
+    Tracing: Active
+    LoggingConfig:
+      ApplicationLogLevel: INFO
+      LogFormat: JSON
+
 Resources:
   AdapterRustBufferedFunction:
     Type: AWS::Serverless::Function
@@ -41,10 +48,6 @@ Resources:
         - arm64
       MemorySize: 256
       Timeout: 10
-      Tracing: Active
-      LoggingConfig:
-        ApplicationLogLevel: INFO
-        LogFormat: JSON
 
   GatewayService:
     Type: Khone::Gateway::Service
