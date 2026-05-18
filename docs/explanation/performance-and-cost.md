@@ -5,15 +5,31 @@ public benchmark snapshot in that frame: steady, adaptive, and target-aware batc
 when batching reduces enough downstream work to justify the extra hop.
 
 The charts below summarize benchmark runs at 256 MB target-function memory, with the gateway running
-on LMI and using a minimum of four execution environments during the final benchmark pass. Round 2
-is shown because it reduces first-round scale and empty-state effects.
+on LMI, using a capacity provider configured with m8g instances, and keeping a minimum of four
+execution environments during the final benchmark pass. Round 2 is shown because it reduces
+first-round scale and empty-state effects.
+
+Each endpoint ultimately waits on the same simulated downstream service: the target Lambda calls a
+benchmark backend Lambda URL, and that backend sleeps before returning JSON. The backend delay is
+part of the scenario, not the k6 `max-delay` query value.
+
+That makes the public snapshot an I/O-bound scenario. It is the kind of workload Khone is meant to
+help: target handlers spend a meaningful part of each request waiting on another service, so batching
+can reduce invocation count and reuse one warm execution context while those waits are in flight.
+For CPU-bound handlers, where each item mostly burns CPU, batching is less likely to improve
+throughput or cost because there are fewer wait states to overlap.
 
 ## Scenario metadata
 
 | Setting | Value |
 | :-- | :-- |
 | Target function memory | `256 MB` |
-| Backend delay model | `80 ms` base delay plus `80 ms` jitter |
+| Target architecture | `arm64` |
+| Gateway capacity provider | LMI provider configured with `m8g` instances |
+| Gateway function memory | `2048 MB` |
+| Gateway LMI capacity | `4/4` execution environments, `64` concurrent requests per environment, `2.0 GiB/vCPU` |
+| Backend workload | Target Lambdas call a backend Lambda URL that simulates delayed downstream responses |
+| Backend delay model | `80 ms` base delay plus up to `80 ms` item-key-seeded jitter (`80-160 ms`) |
 | Backend work points | `48` |
 | Backend timeout | `7000 ms` |
 | Khone target concurrency | `16` |
@@ -97,7 +113,9 @@ sandbox just processes a larger batch instead of a peer being cold-started next 
 
 This effect is workload-dependent and is not directly measured by the public benchmark. It only
 shows up when traffic has enough concurrency to batch in the first place, and it largely disappears
-for routes that already run at steady high concurrency on a stable footprint.
+for routes that already run at steady high concurrency on a stable footprint. It also depends on the
+handler being able to make progress while items are waiting on I/O; pure CPU work will usually need
+more compute, not a larger batch.
 
 ## What the estimate includes
 

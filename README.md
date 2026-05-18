@@ -17,8 +17,13 @@ client-facing responses.
 ## Why It Exists
 
 Khone is for workloads where many short Lambda requests can be grouped without breaking the caller's
-HTTP semantics. The gateway adds a small amount of routing and batching latency, but can reduce the
-number of target Lambda invocations and the amount of downstream work.
+HTTP semantics. It is strongest for I/O-bound handlers that spend much of their time waiting on
+databases, APIs, or other backend responses: batching lets one warm execution context hold multiple
+in-flight items and share setup or data loading while those waits happen.
+
+It is a weaker fit for CPU-bound handlers where each item spends most of its time consuming CPU. In
+that case, grouping work into one invocation does not create useful wait states to hide, and the
+gateway still adds a small amount of routing and batching latency.
 
 It is not a general API Gateway replacement. It does not manage auth, DNS, WAF, durable workflow
 state, or LMI capacity providers. See [Project scope](docs/explanation/project-scope.md) for the
@@ -41,11 +46,15 @@ The public benchmark snapshot compares four endpoints:
   <img alt="Estimated target invocation cost by endpoint, normalized to the standard endpoint" src="docs/assets/performance-cost/cost-estimate-summary-light.svg">
 </picture>
 
-At 256 MB target-function memory, target-aware batching produced the lowest estimated target
-invocation cost in the curated public runs: 45.1% of the standard baseline in the low-traffic
-profile and 17.7% in the high-traffic profile. Steady batching reached 65.4% and 32.4%;
-adaptive reached 85.1% and 36.2%. These projections cover target Lambda invocation work, not the
-full AWS bill.
+The public runs used 256 MB target-function memory. The LMI gateway capacity provider was
+configured with m8g instances and a minimum of four execution environments. Each target Lambda calls
+a backend Lambda URL that simulates downstream response latency with an 80 ms base delay plus up to
+80 ms of item-key-seeded jitter.
+
+At that configuration, target-aware batching produced the lowest estimated target invocation cost in
+the curated public runs: 45.1% of the standard baseline in the low-traffic profile and 17.7% in the
+high-traffic profile. Steady batching reached 65.4% and 32.4%; adaptive reached 85.1% and 36.2%.
+These projections cover target Lambda invocation work, not the full AWS bill.
 
 The generated benchmark chart below is the high-traffic round 2 public report. It shows sampled
 latency over time, per-stage cost bars, and heatmap summaries.

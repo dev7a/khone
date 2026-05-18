@@ -10,8 +10,10 @@ The current deployment model is Lambda Managed Instances (LMI), SAM zip packagin
 function. The `KhoneGateway` macro only publishes the gateway config/spec artifact to S3.
 
 Khone is worth using when request grouping reduces target Lambda work enough to justify the extra
-gateway hop. It is not a replacement for API Gateway features like auth, custom domains, or WAF,
-and is probably better if protected with CloudFront.
+gateway hop. It helps most with I/O-bound Lambda handlers that spend much of their time waiting on
+backend responses; CPU-bound handlers are less likely to benefit because batching does not add CPU
+capacity or create wait states to hide. It is not a replacement for API Gateway features like auth,
+custom domains, or WAF, and is probably better if protected with CloudFront.
 
 ## Performance snapshot
 
@@ -21,9 +23,10 @@ and is probably better if protected with CloudFront.
   <img alt="Estimated target invocation cost by endpoint, normalized to the standard endpoint" src="assets/performance-cost/cost-estimate-summary-light.svg">
 </picture>
 
-The public benchmark snapshot shows target-aware batching at 17.7% of the standard
-target-invocation cost estimate in the high-traffic profile, with higher latency than direct
-invocation. Start with
+The public benchmark snapshot used 256 MB target Lambdas, an LMI capacity provider configured with
+m8g instances, and a backend Lambda that simulates delayed downstream responses. It shows
+target-aware batching at 17.7% of the standard target-invocation cost estimate in the high-traffic
+profile, with higher latency than direct invocation. Start with
 [Performance and cost](explanation/performance-and-cost.md) before reading individual benchmark
 reports.
 

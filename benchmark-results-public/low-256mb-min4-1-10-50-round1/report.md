@@ -57,6 +57,15 @@ Region: `us-east-1`
 
 _Lambda configuration was not captured for this run._
 
+### Benchmark Scenario Notes
+
+- Target handler Lambdas call the benchmark backend Lambda URL for each item; the backend simulates a delayed downstream response before returning JSON.
+- This models an I/O-bound handler where request time is dominated by waiting on another service; CPU-bound handlers are less likely to benefit from batching because there are fewer wait states to overlap.
+- Backend delay is `80` ms base plus `80` ms item-key-seeded jitter, for an effective `80-160 ms` backend sleep. This is separate from the k6 max-delay query value.
+- Backend responses include `48` generated points per item.
+- Benchmark handlers use a `7000` ms timeout when calling the backend.
+- The LMI capacity provider for this public run was configured with `m8g` instances. The gateway template used `2048 MB`, `arm64`, `64` concurrent requests per execution environment, `2.0 GiB/vCPU`, and `4/4` execution environments.
+
 ## Key Findings
 
 - Fastest p95 endpoint: **standard** at **196.94 ms**.

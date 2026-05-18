@@ -79,6 +79,10 @@ test('report includes workload and deployed Lambda configuration', async () => {
       collected_at: '2026-01-01T00:00:00.000Z',
       parameters: {
         BenchmarkHandlerMemorySize: '512',
+        BenchmarkBackendBaseDelayMs: '80',
+        BenchmarkBackendJitterMs: '80',
+        BenchmarkBackendPoints: '48',
+        BenchmarkBackendTimeoutMs: '7000',
         KhoneMaxConcurrency: '16',
       },
       functions: [
@@ -140,6 +144,13 @@ test('report includes workload and deployed Lambda configuration', async () => {
   assert.match(text, /1\/4 envs/);
   assert.match(text, /64 conc\/env/);
   assert.match(text, /2 GiB\/vCPU/);
+  assert.match(text, /Benchmark Scenario Notes/);
+  assert.match(text, /backend Lambda URL/);
+  assert.match(text, /I\/O-bound handler/);
+  assert.match(text, /CPU-bound handlers are less likely to benefit/);
+  assert.match(text, /80.*ms base plus.*80.*ms item-key-seeded jitter/);
+  assert.match(text, /48.*generated points per item/);
+  assert.match(text, /7000.*ms timeout/);
   assert.doesNotMatch(text, /https:\/\/example\.com/);
   assert.doesNotMatch(text, /arn:aws/);
   assert.doesNotMatch(text, /123456789012/);
