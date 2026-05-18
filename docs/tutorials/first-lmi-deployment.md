@@ -1,19 +1,19 @@
 # First LMI deployment
 
-This tutorial deploys the bootstrap stack and the demo gateway stack. At the end, you will have a
-Rust gateway Lambda running on Lambda Managed Instances (LMI) behind a response-streaming Function
+This tutorial deploys the bootstrap stack and one example gateway stack. At the end, you will have
+a Rust gateway Lambda running on Lambda Managed Instances (LMI) behind a response-streaming Function
 URL, with a working `curl` against a sample target.
 
 The two stacks split deliberately:
 
 - The bootstrap stack is shared per account and region. It creates the config bucket, the macro,
   and the layers that every application stack consumes.
-- An application stack (here, `examples/sam/`) owns the gateway `AWS::Serverless::Function` and the
-  target Lambdas.
+- An application stack (here, one directory under `examples/sam/templates/`) owns the gateway
+  `AWS::Serverless::Function` and the target Lambdas.
 
 ## Prerequisites
 
-- AWS credentials and a default region. The demo `samconfig.toml` pins `us-east-1`; export
+- AWS credentials and a default region. The example `samconfig.toml` files pin `us-east-1`; export
   `AWS_REGION` to override.
 - IAM permissions to create IAM roles, Lambda functions, CloudFormation macros, S3 buckets, and
   custom resources.
@@ -42,44 +42,54 @@ It also exports `KhoneLayerArm64Arn`, `KhoneLayerAmd64Arn`, `KhoneConfigBucketNa
 `KhoneConfigPublisherServiceToken`. The bootstrap stack only needs to be deployed once per account
 and region.
 
-## 2. Deploy the demo stack
+## 2. Deploy an example stack
 
 ```bash
 make examples-sam-deploy GATEWAY_CAPACITY_PROVIDER_ARN=arn:aws:lambda:...
 ```
 
-This step builds the gateway and sample target handlers, resolves `KhoneLayerArm64Arn` from the
-bootstrap exports, normalizes the capacity provider ARN if needed, and deploys the stack
-(`khone-demo` by default, from `examples/sam/samconfig.toml`).
+This step builds the gateway and sample target handlers, normalizes the capacity provider ARN if
+needed, and deploys the default `adapter-node` stack (`khone-adapter-node`, from
+`examples/sam/templates/adapter-node/samconfig.toml`).
 
-The demo stack deploys:
+To deploy a different integration or language, set `EXAMPLE_TEMPLATE` to `layer-proxy-node`, `layer-proxy-python`,
+`adapter-node`, `adapter-rust`, or `native-batch-node`.
 
-- Sample target Lambdas (buffered, streaming, dynamic-wait, duration-wait variants).
+```bash
+make examples-sam-deploy \
+  EXAMPLE_TEMPLATE=layer-proxy-python \
+  GATEWAY_CAPACITY_PROVIDER_ARN=arn:aws:lambda:...
+```
+
+Layer proxy templates, Mode A, resolve `KhoneLayerArm64Arn` from the bootstrap exports. If a layer
+proxy deployment fails on a missing `KhoneLayerArm64Arn` import, the bootstrap stack has not been
+deployed in this account/region - go back to step 1.
+
+Each example stack deploys:
+
+- Sample target Lambdas for one integration mode/language.
 - One `Khone::Gateway::Service` resource, which the macro expands into the config manifest object.
 - The gateway as an `AWS::Serverless::Function` (`provided.al2023`, arm64, with the LMI capacity
   provider attached and `FunctionUrlConfig.InvokeMode: RESPONSE_STREAM`).
 - A scoped IAM policy that allows the gateway to invoke target Lambdas.
 
-If deployment fails on a missing `KhoneLayerArm64Arn` import, the bootstrap stack has not been
-deployed in this account/region — go back to step 1.
-
 ## 3. Find the Function URL
 
 ```bash
 aws cloudformation describe-stacks \
-  --stack-name khone-demo \
+  --stack-name khone-adapter-node \
   --query 'Stacks[0].Outputs'
 ```
 
 Look for `GatewayFunctionUrl` (the base URL) and route-specific outputs such as
-`StreamingSimpleHelloUrl`.
+`AdapterNodeStreamingUrl`.
 
 ## 4. Send a request
 
 ```bash
 curl -sS "$(aws cloudformation describe-stacks \
-  --stack-name khone-demo \
-  --query 'Stacks[0].Outputs[?OutputKey==`StreamingSimpleHelloUrl`].OutputValue' \
+  --stack-name khone-adapter-node \
+  --query 'Stacks[0].Outputs[?OutputKey==`AdapterNodeStreamingUrl`].OutputValue' \
   --output text)?max-delay=0"
 ```
 
@@ -102,7 +112,7 @@ Remove `max-delay=0` and replay under load (`hey`, `k6`, or similar) to see batc
 ## Next steps
 
 - Adapt the pattern for your own stack with [Deploy your own SAM gateway](../how-to/deploy-your-own-sam-gateway.md).
-- Walk the demo stack in detail with [Deploy the demo stack](../how-to/deploy-demo-stack.md).
+- Walk the examples in detail with [Deploy the example templates](../how-to/deploy-demo-stack.md).
 - Wire up your handler code with [Integrate Lambda handlers](../how-to/integrate-handlers.md).
 - Pick a batching policy with [Tune batching and timeouts](../how-to/tune-batching.md).
 - Learn the config shape in [Configuration](../reference/config.md).

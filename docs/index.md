@@ -60,12 +60,12 @@ Read these pages in order to understand the scope of the service:
 ### How-to guides
 
 - [Deploy your own SAM gateway](how-to/deploy-your-own-sam-gateway.md)
-- [Deploy the demo stack](how-to/deploy-demo-stack.md)
+- [Deploy the example templates](how-to/deploy-demo-stack.md)
 - [Deploy the benchmark stack](how-to/deploy-benchmark-stack.md)
 - [Run benchmarks](how-to/run-benchmarks.md)
 - [Tune batching and timeouts](how-to/tune-batching.md)
 - [Integrate Lambda handlers](how-to/integrate-handlers.md)
-- [Use the Mode A layer proxy](how-to/use-mode-a-layer-proxy.md)
+- [Use the layer proxy, Mode A](how-to/use-mode-a-layer-proxy.md)
 
 ### Reference
 

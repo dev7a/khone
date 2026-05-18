@@ -79,6 +79,10 @@ make bootstrap-deploy
 make examples-sam-deploy GATEWAY_CAPACITY_PROVIDER_ARN=arn:aws:lambda:...
 ```
 
+`examples-sam-deploy` defaults to the Node adapter, Mode B template. Use
+`EXAMPLE_TEMPLATE=layer-proxy-node`, `layer-proxy-python`, `adapter-node`, `adapter-rust`, or `native-batch-node` to
+deploy a specific example.
+
 SAM Rust builds require `cargo-lambda` and `SAM_CLI_BETA_RUST_CARGO_LAMBDA=1`.
 
 ## Documentation
@@ -101,7 +105,7 @@ macro reference, performance and cost, then benchmark methodology.
 - `gateway/`: Rust Axum/Lambda gateway.
 - `bootstrap/`: config publisher, macro, and shared Mode A layer.
 - `lambda-kit/`: Node and Rust adapters for target Lambdas.
-- `examples/sam/`: demo LMI deployment.
+- `examples/sam/`: individually deployable SAM examples by integration and language.
 - `benchmark/`: benchmark stack, k6 runner, and report tooling.
 - `docs/`: public documentation.
 

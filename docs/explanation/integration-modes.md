@@ -1,16 +1,16 @@
 # Integration modes
 
-The gateway supports three target Lambda integration modes.
+The gateway supports three target Lambda integrations.
 
-| Mode | Name | Code changes | Best fit |
+| Integration | Mode | Code changes | Best fit |
 | --- | --- | --- | --- |
-| Mode A | Layer proxy | None | Existing handlers that cannot change. |
-| Mode B | Adapter | Small wrapper | Most new or modifiable handlers. |
-| Mode C | Native batch | Full control | Custom batch processing. |
+| Layer proxy | Mode A | None | Existing handlers that cannot change. |
+| Adapter | Mode B | Small wrapper | Most new or modifiable handlers. |
+| Native batch | Mode C | Full control | Custom batch processing. |
 
-## Mode B is the default
+## Adapter, Mode B, is the default
 
-Mode B preserves the familiar single-request handler shape and lets the adapter handle batch
+The adapter, Mode B, preserves the familiar single-request handler shape. It handles batch
 correlation, per-item errors, and response formatting. Use it when you own the handler code.
 
 ```javascript
@@ -28,10 +28,10 @@ async function getItem(event) {
 exports.handler = batchAdapter(getItem);
 ```
 
-## Mode C is for shared work
+## Native batch, Mode C, is for shared work
 
-Mode C gives the handler the whole batch. Use it when one invocation should share data loading,
-fan-out, or response generation across all items.
+Native batch, Mode C, gives the handler the whole batch. Use it when one invocation should share
+data loading, fan-out, or response generation across all items.
 
 ```javascript
 exports.handler = async function handler(event) {
@@ -51,11 +51,11 @@ exports.handler = async function handler(event) {
 };
 ```
 
-## Mode A is a compatibility tool
+## Layer proxy, Mode A, is a compatibility tool
 
-Mode A uses a Lambda layer and Runtime API proxy to present one outer batch invocation as multiple
-virtual runtime invocations. It is useful for unmodified handlers, but it is runtime-specific and
-more fragile than adapters.
+The layer proxy, Mode A, uses a Lambda layer and Runtime API proxy to present one outer batch
+invocation as multiple virtual runtime invocations. It is useful for unmodified handlers, but it is
+runtime-specific and more fragile than adapters.
 
 The target handler keeps the normal Lambda shape; the layer handles the batch fan-out before the
 handler is called.

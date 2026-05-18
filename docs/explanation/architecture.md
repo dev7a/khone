@@ -56,11 +56,11 @@ any time.
 Khone targets three handler shapes. The mode you pick determines how much of the batch protocol your
 Lambda code sees.
 
-| Mode | Name | Code changes | Best fit |
+| Integration | Mode | Code changes | Best fit |
 | --- | --- | --- | --- |
-| A | Layer proxy | None | Existing handlers that cannot change. |
-| B | Adapter | Small wrapper | Most new or modifiable handlers. |
-| C | Native batch | Full control | Custom batch processing or shared work. |
+| Layer proxy | Mode A | None | Existing handlers that cannot change. |
+| Adapter | Mode B | Small wrapper | Most new or modifiable handlers. |
+| Native batch | Mode C | Full control | Custom batch processing or shared work. |
 
 ## Non-goals
 

@@ -1,0 +1,139 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform:
+  - AWS::Serverless-2016-10-31
+  - KhoneGateway
+Description: Khone Python layer proxy example (layer proxy target + LMI gateway)
+
+Parameters:
+  KhoneLayerArm64Arn:
+    Type: String
+    Description: ARN of the shared arm64 Mode A runtime API proxy layer.
+  GatewayCapacityProviderArn:
+    Type: String
+    AllowedPattern: '^arn:aws[a-zA-Z-]*:lambda:[a-z0-9-]+:[0-9]{12}:capacity-provider:[a-zA-Z0-9-_]+$'
+    ConstraintDescription: Must be a Lambda capacity provider ARN in capacity-provider:<name> form.
+    Description: ARN of an existing Lambda Managed Instances capacity provider for the gateway function.
+  OtelTracesEndpoint:
+    Type: String
+    Default: ""
+    Description: Optional OTLP traces endpoint URL. Leave empty to disable OTEL export.
+  OtelTracesProtocol:
+    Type: String
+    Default: http/protobuf
+    AllowedValues:
+      - http/protobuf
+      - grpc
+    Description: OTLP protocol to use for exporting traces.
+
+Conditions:
+  OtelEnabled: !Not [!Equals [!Ref OtelTracesEndpoint, ""]]
+
+Globals:
+  Function:
+    Handler: app.handler
+    Timeout: 10
+    MemorySize: 256
+    Tracing: Active
+    LoggingConfig:
+      ApplicationLogLevel: INFO
+      LogFormat: JSON
+
+Resources:
+  LayerProxyPythonHelloFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: python3.14
+      CodeUri: ../../lambda/layer-proxy-python/
+      FunctionName: !Sub '${AWS::StackName}-layer-proxy-python-hello'
+      Description: Layer proxy, Mode A target handler (Python).
+      Architectures:
+        - arm64
+      Layers:
+        - !Ref KhoneLayerArm64Arn
+      Environment:
+        Variables:
+          AWS_LAMBDA_EXEC_WRAPPER: /opt/khone/exec-wrapper.sh
+          KHONE_MAX_CONCURRENCY: "4"
+
+  GatewayService:
+    Type: Khone::Gateway::Service
+    Properties:
+      ConfigPrefix: !Sub 'khone/${AWS::StackName}/gateway/'
+      GatewayConfig:
+        DefaultTimeoutMs: 2000
+      Spec:
+        openapi: 3.0.0
+        info:
+          title: Khone Python layer proxy example
+          version: "1"
+        paths:
+          /layer-proxy/python/{greeting}:
+            get:
+              x-target-lambda: !GetAtt LayerProxyPythonHelloFunction.Arn
+              x-khone:
+                maxWaitMs: 25
+                maxBatchSize: 4
+                invokeMode: response_stream
+                timeoutMs: 8000
+
+  GatewayFunction:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: rust-cargolambda
+    Properties:
+      CodeUri: ../../../../gateway
+      Handler: bootstrap
+      Runtime: provided.al2023
+      PackageType: Zip
+      FunctionName: !Sub '${AWS::StackName}-gateway'
+      Description: Khone router running on Lambda Managed Instances.
+      Architectures:
+        - arm64
+      MemorySize: 2048
+      Timeout: 30
+      CapacityProviderConfig:
+        Arn: !Ref GatewayCapacityProviderArn
+        ExecutionEnvironmentMemoryGiBPerVCpu: 2.0
+        PerExecutionEnvironmentMaxConcurrency: 64
+      FunctionScalingConfig:
+        MinExecutionEnvironments: 1
+        MaxExecutionEnvironments: 4
+      FunctionUrlConfig:
+        AuthType: NONE
+        InvokeMode: RESPONSE_STREAM
+      Environment:
+        Variables:
+          RUST_LOG: info
+          KHONE_CONFIG_URI: !GetAtt GatewayService.ConfigS3Uri
+          KHONE_OBSERVABILITY_VENDOR: !If [OtelEnabled, AWSXRAY, !Ref AWS::NoValue]
+          OTEL_PROPAGATORS: !If [OtelEnabled, "xray,tracecontext,baggage", !Ref AWS::NoValue]
+          OTEL_METRICS_EXPORTER: !If [OtelEnabled, "none", !Ref AWS::NoValue]
+          OTEL_SERVICE_NAME: !If [OtelEnabled, !Sub '${AWS::StackName}-gateway', !Ref AWS::NoValue]
+          OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: !If [OtelEnabled, !Ref OtelTracesEndpoint, !Ref AWS::NoValue]
+          OTEL_EXPORTER_OTLP_TRACES_PROTOCOL: !If [OtelEnabled, !Ref OtelTracesProtocol, !Ref AWS::NoValue]
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - Statement:
+            - Sid: ReadGatewayConfig
+              Effect: Allow
+              Action: s3:GetObject
+              Resource: !Sub
+                - 'arn:${AWS::Partition}:s3:::${Bucket}/${Prefix}*'
+                - Bucket: !GetAtt GatewayService.BucketName
+                  Prefix: !GetAtt GatewayService.Prefix
+            - Sid: InvokeTargetLambda
+              Effect: Allow
+              Action:
+                - lambda:InvokeWithResponseStream
+              Resource:
+                - !GetAtt LayerProxyPythonHelloFunction.Arn
+
+Outputs:
+  LayerProxyPythonHelloFunctionArn:
+    Value: !GetAtt LayerProxyPythonHelloFunction.Arn
+  GatewayFunctionUrl:
+    Value: !GetAtt GatewayFunctionUrl.FunctionUrl
+  GatewayServiceConfigS3Uri:
+    Value: !GetAtt GatewayService.ConfigS3Uri
+  LayerProxyPythonHelloUrl:
+    Value: !Sub "${GatewayFunctionUrl.FunctionUrl}layer-proxy/python/hello"

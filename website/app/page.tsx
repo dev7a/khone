@@ -103,7 +103,7 @@ export default function HomePage() {
               <div>
                 <div className="num">02 / Integration</div>
                 <h2 className="section-title">
-                  Three modes for
+                  Three integrations for
                   <br />
                   three handler shapes.
                 </h2>
@@ -117,7 +117,7 @@ export default function HomePage() {
             <div className="modes">
               <article className="mode-card">
                 <div className="head">
-                  <span className="tag">Mode A</span>
+                  <span className="tag">Layer proxy</span>
                   <span className="pill">No code change</span>
                 </div>
                 <h3>Layer Proxy</h3>
@@ -131,7 +131,7 @@ export default function HomePage() {
               </article>
               <article className="mode-card">
                 <div className="head">
-                  <span className="tag">Mode B</span>
+                  <span className="tag">Adapter</span>
                   <span className="pill">Add an SDK</span>
                 </div>
                 <h3>Adapter</h3>
@@ -145,7 +145,7 @@ export default function HomePage() {
               </article>
               <article className="mode-card">
                 <div className="head">
-                  <span className="tag">Mode C</span>
+                  <span className="tag">Native batch</span>
                   <span className="pill">Full control</span>
                 </div>
                 <h3>Native Batch</h3>
@@ -359,11 +359,11 @@ exports.handler = batchAdapter(handleItem);`}</code>
                 <h4>How-To</h4>
                 <ul>
                   <li><Link href="/docs/how-to/deploy-your-own-sam-gateway/">Deploy your own SAM gateway</Link></li>
-                  <li><Link href="/docs/how-to/deploy-demo-stack/">Deploy the demo stack</Link></li>
+                  <li><Link href="/docs/how-to/deploy-demo-stack/">Deploy the example templates</Link></li>
                   <li><Link href="/docs/how-to/run-benchmarks/">Run benchmarks</Link></li>
                   <li><Link href="/docs/how-to/tune-batching/">Tune batching and timeouts</Link></li>
                   <li><Link href="/docs/how-to/integrate-handlers/">Integrate Lambda handlers</Link></li>
-                  <li><Link href="/docs/how-to/use-mode-a-layer-proxy/">Use the Mode A layer proxy</Link></li>
+                  <li><Link href="/docs/how-to/use-mode-a-layer-proxy/">Use the layer proxy, Mode A</Link></li>
                 </ul>
               </div>
               <div className="col">
