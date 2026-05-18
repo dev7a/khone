@@ -23,7 +23,8 @@ export default function HomePage() {
               <p className="lead">
                 Khone buffers requests by route and batching dimensions for a few milliseconds,
                 invokes Lambda with batched payloads, and routes each per-request response back to
-                the original caller. It&apos;s a configurable latency-vs-cost dial.
+                the original caller. It deliberately trades a few milliseconds per request for a
+                smaller bill and fewer cold starts. That&apos;s the whole pitch.
               </p>
               <div className="cta-row">
                 <Link className="btn primary" href="/docs/tutorials/first-lmi-deployment/">
@@ -125,7 +126,7 @@ export default function HomePage() {
                 <ul className="features">
                   <li>Drop-in for legacy handlers</li>
                   <li>Runtime-specific (Node, Python)</li>
-                  <li>Best for stacks you can&apos;t touch</li>
+                  <li>Best when changing the handler is somebody else&apos;s problem</li>
                 </ul>
               </article>
               <article className="mode-card">
@@ -269,8 +270,11 @@ exports.handler = batchAdapter(handleItem);`}</code>
                 The public benchmark normalizes target invocation cost to the standard endpoint,
                 an API Gateway HTTP API plus Lambda baseline, at 100%. In the high-traffic profile,
                 <em>target-aware</em> batching delivered the lowest estimated target cost. The
-                standard endpoint stays fastest because it avoids the gateway hop; Khone&apos;s value is
-                the cost/throughput tradeoff, not minimum single-request latency.
+                standard endpoint stays fastest because it avoids the gateway hop; asking a gateway
+                to beat no gateway on latency was always going to be a losing fight. Khone trades
+                some of that latency for a smaller bill — and, as a side effect, traffic spikes
+                tend to land on warm sandboxes that are already chewing through a batch, rather
+                than forcing fresh cold starts next door.
               </p>
             </div>
 
@@ -338,7 +342,8 @@ exports.handler = batchAdapter(handleItem);`}</code>
                 <h2 className="section-title">Read your way in.</h2>
               </div>
               <p className="lede">
-                Public docs follow Diátaxis. Start with project scope and architecture; deploy via
+                Public docs follow Diátaxis. If a page feels misfiled, the framework is probably
+                more right than the author. Start with project scope and architecture; deploy via
                 the LMI tutorial; tune via the configuration reference.
               </p>
             </div>

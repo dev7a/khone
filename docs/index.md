@@ -9,9 +9,9 @@ The current deployment model is Lambda Managed Instances (LMI), SAM zip packagin
 `rust-cargolambda`, a response-streaming Lambda Function URL, and an explicit user-owned gateway
 function. The `KhoneGateway` macro only publishes the gateway config/spec artifact to S3.
 
-Khone is most relevant when request grouping can reduce target Lambda work enough to justify an
-extra gateway hop. It is not a replacement for API Gateway features such as auth, custom domains,
-WAF, or durable workflow orchestration.
+Khone is worth using when request grouping reduces target Lambda work enough to justify the extra
+gateway hop. It is not a replacement for API Gateway features like auth, custom domains, or WAF,
+and is probably better if protected with CloudFront.
 
 ## Performance snapshot
 
