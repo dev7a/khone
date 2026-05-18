@@ -79,9 +79,9 @@ make bootstrap-deploy
 make examples-sam-deploy GATEWAY_CAPACITY_PROVIDER_ARN=arn:aws:lambda:...
 ```
 
-`examples-sam-deploy` defaults to the Node adapter, Mode B template. Use
-`EXAMPLE_TEMPLATE=layer-proxy-node`, `layer-proxy-python`, `adapter-node`, `adapter-rust`, or `native-batch-node` to
-deploy a specific example.
+`examples-sam-deploy` defaults to the Node adapter, Mode B template. Set
+`EXAMPLE_TEMPLATE` to `adapter-node`, `adapter-rust`, `layer-proxy-node`,
+`layer-proxy-python`, or `native-batch-node` to deploy a specific example.
 
 SAM Rust builds require `cargo-lambda` and `SAM_CLI_BETA_RUST_CARGO_LAMBDA=1`.
 

@@ -1807,6 +1807,7 @@ version = "0.1.0"
 dependencies = [
  "aws_lambda_events",
  "base64 0.22.1",
+ "fastrand",
  "khone-lambda-adapter",
  "lambda_runtime",
  "serde_json",

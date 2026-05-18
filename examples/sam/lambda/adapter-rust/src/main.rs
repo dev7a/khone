@@ -8,13 +8,21 @@ use serde_json::json;
 
 const MAX_DELAY_MS: u64 = 10_000;
 
-fn parse_delay_ms(event: &ApiGatewayV2httpRequest) -> u64 {
+fn parse_max_delay_ms(event: &ApiGatewayV2httpRequest) -> u64 {
     event
         .query_string_parameters
         .first("max-delay")
         .and_then(|raw| raw.parse::<u64>().ok())
         .map(|n| n.min(MAX_DELAY_MS))
         .unwrap_or(0)
+}
+
+fn random_delay_ms(max_delay_ms: u64) -> u64 {
+    if max_delay_ms == 0 {
+        0
+    } else {
+        fastrand::u64(0..=max_delay_ms)
+    }
 }
 
 fn decode_body_utf8(event: &ApiGatewayV2httpRequest) -> String {
@@ -44,7 +52,8 @@ fn query_string_parameters(event: &ApiGatewayV2httpRequest) -> HashMap<String, S
 async fn handle_item(
     event: ApiGatewayV2httpRequest,
 ) -> Result<HandlerResponse, Infallible> {
-    let delay_ms = parse_delay_ms(&event);
+    let max_delay_ms = parse_max_delay_ms(&event);
+    let delay_ms = random_delay_ms(max_delay_ms);
     if delay_ms > 0 {
         tokio::time::sleep(Duration::from_millis(delay_ms)).await;
     }
@@ -73,7 +82,7 @@ async fn handle_item(
         "routeKey": route_key,
         "query": query,
         "pathParameters": path_parameters,
-        "maxDelayMs": delay_ms,
+        "maxDelayMs": max_delay_ms,
         "delayMs": delay_ms,
         "bodyUtf8": body_utf8,
     });
