@@ -24,7 +24,8 @@ export default function HomePage() {
                 Khone buffers requests by route and batching dimensions for a few milliseconds,
                 invokes Lambda with batched payloads, and routes each per-request response back to
                 the original caller. It deliberately trades a few milliseconds per request for a
-                smaller bill and fewer cold starts. That&apos;s the whole pitch.
+                smaller bill and fewer cold starts, especially when handlers are waiting on
+                downstream I/O rather than burning CPU. That&apos;s the whole pitch.
               </p>
               <div className="cta-row">
                 <Link className="btn primary" href="/docs/tutorials/first-lmi-deployment/">
@@ -274,7 +275,8 @@ exports.handler = batchAdapter(handleItem);`}</code>
                 to beat no gateway on latency was always going to be a losing fight. Khone trades
                 some of that latency for a smaller bill — and, as a side effect, traffic spikes
                 tend to land on warm sandboxes that are already chewing through a batch, rather
-                than forcing fresh cold starts next door.
+                than forcing fresh cold starts next door. The target Lambdas call a backend Lambda
+                URL that simulates delayed downstream responses.
               </p>
             </div>
 
@@ -327,8 +329,9 @@ exports.handler = batchAdapter(handleItem);`}</code>
 
             <div className="callout-row">
               <span>Target memory: 256 MB</span>
-              <span>Backend: 80 ms + 80 ms jitter</span>
-              <span>Min 4 LMI envs</span>
+              <span>Backend Lambda: 80-160 ms</span>
+              <span>LMI provider: m8g</span>
+              <span>4 LMI envs · 64 conc/env</span>
               <span>Round 2: low traffic 0 errors</span>
             </div>
           </div>

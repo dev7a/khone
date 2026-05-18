@@ -264,6 +264,32 @@ function buildLambdaConfigurationTable(metrics: MetricsBundle): string {
   return lines.join('\n');
 }
 
+function buildBenchmarkScenarioNotes(metrics: MetricsBundle): string {
+  const params = metrics.run?.deployment?.parameters ?? {};
+  const baseDelayMs = params.BenchmarkBackendBaseDelayMs;
+  const jitterMs = params.BenchmarkBackendJitterMs;
+  const pointCount = params.BenchmarkBackendPoints;
+  const timeoutMs = params.BenchmarkBackendTimeoutMs;
+  const notes = [
+    'Target handler Lambdas call the benchmark backend Lambda URL for each item; the backend simulates a delayed downstream response before returning JSON.',
+    'This models an I/O-bound handler where request time is dominated by waiting on another service; CPU-bound handlers are less likely to benefit from batching because there are fewer wait states to overlap.',
+  ];
+
+  if (baseDelayMs || jitterMs) {
+    notes.push(
+      `Backend delay is ${code(baseDelayMs ?? 'n/a')} ms base plus ${code(jitterMs ?? 'n/a')} ms item-key-seeded jitter. This is separate from the k6 max-delay query value.`,
+    );
+  }
+  if (pointCount) {
+    notes.push(`Backend responses include ${code(pointCount)} generated points per item.`);
+  }
+  if (timeoutMs) {
+    notes.push(`Benchmark handlers use a ${code(timeoutMs)} ms timeout when calling the backend.`);
+  }
+
+  return notes.map((note) => `- ${note}`).join('\n');
+}
+
 function buildConfigurationSection(metrics: MetricsBundle): string {
   const run = metrics.run;
   const lines: string[] = [];
@@ -291,6 +317,10 @@ function buildConfigurationSection(metrics: MetricsBundle): string {
   lines.push('### Lambda Configuration');
   lines.push('');
   lines.push(buildLambdaConfigurationTable(metrics));
+  lines.push('');
+  lines.push('### Benchmark Scenario Notes');
+  lines.push('');
+  lines.push(buildBenchmarkScenarioNotes(metrics));
 
   return lines.join('\n');
 }
