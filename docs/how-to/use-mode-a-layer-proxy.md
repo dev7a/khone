@@ -1,6 +1,7 @@
-# Use the Mode A layer proxy
+# Use the layer proxy, Mode A
 
-Use Mode A only when target handler code cannot change. It is experimental and runtime-specific.
+Use the layer proxy, Mode A, only when target handler code cannot change. It is experimental and
+runtime-specific.
 
 ## Add the layer
 
@@ -27,9 +28,9 @@ Set `KHONE_MAX_CONCURRENCY` to the route `maxBatchSize` as a starting point.
 
 ## Runtime notes
 
-- Node is the most tested Mode A runtime.
+- Node is the most tested layer proxy runtime.
 - The exec wrapper sets `AWS_LAMBDA_NODEJS_USE_ALTERNATIVE_CLIENT_1=true` when multi-concurrency is
   enabled, unless you override it.
 - Python 3.14 concurrency remains experimental and uses a telemetry file descriptor workaround.
-- User-code streaming is not supported in Mode A.
+- User-code streaming is not supported in the layer proxy.
 - Duplicate request ids in a batch are rejected.

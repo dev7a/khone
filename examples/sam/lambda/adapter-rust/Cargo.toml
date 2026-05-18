@@ -1,0 +1,14 @@
+[package]
+name = "khone-example-adapter-rust"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+aws_lambda_events = "1"
+base64 = "0.22"
+khone-lambda-adapter = { path = "../../../../lambda-kit/adapter-rust" }
+lambda_runtime = "1"
+fastrand = "2"
+serde_json = "1"
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "time"] }

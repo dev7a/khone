@@ -3,7 +3,7 @@
 version = 0.1
 
 [default.global.parameters]
-stack_name = "khone-demo"
+stack_name = "khone-layer-proxy-node"
 region = "us-east-1"
 
 [default.build.parameters]
@@ -16,7 +16,7 @@ capabilities = "CAPABILITY_IAM"
 confirm_changeset = false
 fail_on_empty_changeset = false
 resolve_s3 = true
-s3_prefix = "khone-demo"
+s3_prefix = "khone-layer-proxy-node"
 region = "us-east-1"
 beta_features = true
 

@@ -3,5 +3,6 @@ members = [
   "gateway",
   "lambda-kit/adapter-rust",
   "bootstrap/layer-proxy",
+  "examples/sam/lambda/adapter-rust",
 ]
 resolver = "2"

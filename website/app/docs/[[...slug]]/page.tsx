@@ -21,12 +21,12 @@ const sidebar = [
     title: 'How-to',
     links: [
       { href: '/docs/how-to/deploy-your-own-sam-gateway/', label: 'Deploy your own SAM gateway' },
-      { href: '/docs/how-to/deploy-demo-stack/', label: 'Deploy the demo stack' },
+      { href: '/docs/how-to/deploy-demo-stack/', label: 'Deploy the example templates' },
       { href: '/docs/how-to/deploy-benchmark-stack/', label: 'Deploy the benchmark stack' },
       { href: '/docs/how-to/run-benchmarks/', label: 'Run benchmarks' },
       { href: '/docs/how-to/tune-batching/', label: 'Tune batching and timeouts' },
       { href: '/docs/how-to/integrate-handlers/', label: 'Integrate Lambda handlers' },
-      { href: '/docs/how-to/use-mode-a-layer-proxy/', label: 'Use the Mode A layer proxy' },
+      { href: '/docs/how-to/use-mode-a-layer-proxy/', label: 'Use the layer proxy, Mode A' },
     ],
   },
   {

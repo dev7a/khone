@@ -1,11 +1,11 @@
 # Integrate Lambda handlers
 
-Khone supports three target Lambda integration modes.
+Khone supports three target Lambda integrations.
 
-## Use Mode B adapters for most handlers
+## Use adapters, Mode B, for most handlers
 
-Mode B wraps a single-request handler and maps each batch item into a normal API Gateway HTTP API
-v2 event.
+Adapters, Mode B, wrap a single-request handler and map each batch item into a normal API Gateway
+HTTP API v2 event.
 
 Node:
 
@@ -65,10 +65,10 @@ let adapter = batch_adapter_stream(handler);
 Enable interleaved per-request chunk streaming with `{ interleaved: true }` (Node) or
 `.with_interleaved(true)` (Rust). See [Interleaved streaming protocol](../reference/interleaved-streaming-protocol.md).
 
-## Use Mode C for custom batch handling
+## Use native batch, Mode C, for custom batch handling
 
-Mode C handlers receive `event.batch` directly and return the gateway protocol documented in
-[Batch and response protocol](../reference/batch-and-response-protocol.md).
+Native batch handlers, Mode C, receive `event.batch` directly and return the gateway protocol
+documented in [Batch and response protocol](../reference/batch-and-response-protocol.md).
 
-Use Mode C when the handler needs custom fan-out, shared work across items, or a response shape the
-adapters do not cover.
+Use native batch when the handler needs custom fan-out, shared work across items, or a response
+shape the adapters do not cover.
