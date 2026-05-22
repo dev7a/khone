@@ -22,10 +22,10 @@ export default function HomePage() {
               </h1>
               <p className="lead">
                 Khone buffers requests by route and batching dimensions for a few milliseconds,
-                invokes Lambda with batched payloads, and routes each per-request response back to
-                the original caller. It deliberately trades a few milliseconds per request for a
-                smaller bill and fewer cold starts, especially when handlers are waiting on
-                downstream I/O rather than burning CPU. That&apos;s the whole pitch.
+                invokes target Lambdas with batched payloads, and routes each per-request response
+                back to the original caller. It deliberately trades a few milliseconds per request
+                for lower target invocation cost and fewer cold starts, especially when handlers are
+                waiting on downstream I/O rather than consuming CPU. That&apos;s the whole pitch.
               </p>
               <div className="cta-row">
                 <Link className="btn primary" href="/docs/tutorials/first-lmi-deployment/">
@@ -68,10 +68,10 @@ export default function HomePage() {
               </div>
               <p className="lede">
                 The gateway is a Rust Lambda Function URL router running on Lambda Managed
-                Instances. It accepts HTTP, batches inside each execution environment, invokes the
-                target with batched payloads, and demultiplexes per-request responses back to
-                clients. Batches that exceed the invoke payload limit are split before invocation
-                when possible.
+                Instances. It accepts HTTP requests, batches inside each execution environment,
+                invokes target Lambdas with batched payloads, and demultiplexes per-request
+                responses back to clients. Batches that exceed the invoke payload limit are split
+                before invocation when possible.
               </p>
             </div>
             <div className="arch">
@@ -127,7 +127,7 @@ export default function HomePage() {
                 <ul className="features">
                   <li>Drop-in for legacy handlers</li>
                   <li>Runtime-specific (Node, Python)</li>
-                  <li>Best when changing the handler is somebody else&apos;s problem</li>
+                  <li>Best when handler changes are out of scope</li>
                 </ul>
               </article>
               <article className="mode-card">
@@ -271,12 +271,11 @@ exports.handler = batchAdapter(handleItem);`}</code>
                 The public benchmark normalizes target invocation cost to the standard endpoint,
                 an API Gateway HTTP API plus Lambda baseline, at 100%. In the high-traffic profile,
                 <em>target-aware</em> batching delivered the lowest estimated target cost. The
-                standard endpoint stays fastest because it avoids the gateway hop; asking a gateway
-                to beat no gateway on latency was always going to be a losing fight. Khone trades
-                some of that latency for a smaller bill — and, as a side effect, traffic spikes
-                tend to land on warm sandboxes that are already chewing through a batch, rather
-                than forcing fresh cold starts next door. The target Lambdas call a backend Lambda
-                URL that simulates delayed downstream responses.
+                standard endpoint stays fastest because it avoids the gateway hop. Khone trades some
+                of that latency for lower target invocation cost; as a side effect, traffic spikes
+                can stay on warm sandboxes already processing batches instead of forcing new cold
+                starts. The target Lambdas call a backend Lambda URL that simulates delayed
+                downstream responses.
               </p>
             </div>
 
@@ -345,9 +344,8 @@ exports.handler = batchAdapter(handleItem);`}</code>
                 <h2 className="section-title">Read your way in.</h2>
               </div>
               <p className="lede">
-                Public docs follow Diátaxis. If a page feels misfiled, the framework is probably
-                more right than the author. Start with project scope and architecture; deploy via
-                the LMI tutorial; tune via the configuration reference.
+                Public docs follow Diátaxis. Start with project scope and architecture, deploy with
+                the LMI tutorial, and tune with the configuration reference.
               </p>
             </div>
 
