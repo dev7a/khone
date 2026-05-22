@@ -25,9 +25,9 @@ It is a weaker fit for CPU-bound handlers where each item spends most of its tim
 that case, grouping work into one invocation does not create useful wait states to hide, and the
 gateway still adds a small amount of routing and batching latency.
 
-It is not a general API Gateway replacement. It does not manage auth, DNS, WAF, durable workflow
-state, or LMI capacity providers. See [Project scope](docs/explanation/project-scope.md) for the
-full boundary.
+It is not a general API Gateway replacement. It does not manage auth, DNS, WAF, or LMI capacity
+providers; public deployments are usually best placed behind CloudFront. See
+[Project scope](docs/explanation/project-scope.md) for the full boundary.
 
 ## Performance and Cost Snapshot
 

@@ -16,7 +16,7 @@ part of the scenario, not the k6 `max-delay` query value.
 That makes the public snapshot an I/O-bound scenario. It is the kind of workload Khone is meant to
 help: target handlers spend a meaningful part of each request waiting on another service, so batching
 can reduce invocation count and reuse one warm execution context while those waits are in flight.
-For CPU-bound handlers, where each item mostly burns CPU, batching is less likely to improve
+For CPU-bound handlers, where each item mostly consumes CPU, batching is less likely to improve
 throughput or cost because there are fewer wait states to overlap.
 
 ## Scenario metadata
@@ -109,7 +109,7 @@ for each endpoint. They are the public chart artifacts from the round 2 benchmar
 A second-order effect of batching: fewer concurrent target invocations means fewer execution
 environments, which means fewer cold starts. Spikes that would otherwise force Lambda to spin up
 new sandboxes can often be absorbed by the warm ones already handling batches — the same warm
-sandbox just processes a larger batch instead of a peer being cold-started next to it.
+sandbox processes a larger batch instead of a peer being cold-started next to it.
 
 This effect is workload-dependent and is not directly measured by the public benchmark. It only
 shows up when traffic has enough concurrency to batch in the first place, and it largely disappears

@@ -52,8 +52,8 @@ This step builds the gateway and sample target handlers, normalizes the capacity
 needed, and deploys the default `adapter-node` stack (`khone-adapter-node`, from
 `examples/sam/templates/adapter-node/samconfig.toml`).
 
-To deploy a different integration or language, set `EXAMPLE_TEMPLATE` to `layer-proxy-node`, `layer-proxy-python`,
-`adapter-node`, `adapter-rust`, or `native-batch-node`.
+To deploy a different integration or language, set `EXAMPLE_TEMPLATE` to one of
+`layer-proxy-node`, `layer-proxy-python`, `adapter-node`, `adapter-rust`, or `native-batch-node`.
 
 ```bash
 make examples-sam-deploy \
@@ -61,9 +61,9 @@ make examples-sam-deploy \
   GATEWAY_CAPACITY_PROVIDER_ARN=arn:aws:lambda:...
 ```
 
-Layer proxy templates, Mode A, resolve `KhoneLayerArm64Arn` from the bootstrap exports. If a layer
+Mode A layer proxy templates resolve `KhoneLayerArm64Arn` from the bootstrap exports. If a layer
 proxy deployment fails on a missing `KhoneLayerArm64Arn` import, the bootstrap stack has not been
-deployed in this account/region - go back to step 1.
+deployed in this account and region; go back to step 1.
 
 Each example stack deploys:
 

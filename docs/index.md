@@ -13,7 +13,7 @@ Khone is worth using when request grouping reduces target Lambda work enough to 
 gateway hop. It helps most with I/O-bound Lambda handlers that spend much of their time waiting on
 backend responses; CPU-bound handlers are less likely to benefit because batching does not add CPU
 capacity or create wait states to hide. It is not a replacement for API Gateway features like auth,
-custom domains, or WAF, and is probably better if protected with CloudFront.
+custom domains, or WAF; public deployments are usually best placed behind CloudFront.
 
 ## Performance snapshot
 
@@ -45,7 +45,7 @@ reports.
 
 ## Reviewer path
 
-Read these pages in order to understand the scope of the service:
+Read these pages in this order to understand the scope of the service:
 
 1. [Project scope](explanation/project-scope.md)
 2. [Architecture](explanation/architecture.md)
