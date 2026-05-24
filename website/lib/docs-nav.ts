@@ -167,3 +167,7 @@ export function docsSectionForSlug(slug?: string[]) {
 
   return docsNavSections.find((section) => section.href === `/docs/${first}/`);
 }
+
+export function docsSectionForHref(href: string) {
+  return docsNavSections.find((section) => section.href === href);
+}

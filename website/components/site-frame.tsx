@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { GitHubMark } from '@/components/github-mark';
 import { ThemeToggle } from '@/components/theme-toggle';
-import { docsHeaderLinks, docsNavSections } from '@/lib/docs-nav';
+import { docsHeaderLinks, docsSectionForHref } from '@/lib/docs-nav';
 
 const navItems = [
   { href: '/docs/', label: 'Docs' },
@@ -68,7 +68,15 @@ export function SiteHeader({ active }: { active?: 'docs' | 'home' }) {
 }
 
 export function SiteFooter() {
-  const [start, deploy, integrate, operate, benchmarks, reference] = docsNavSections;
+  const start = docsSectionForHref('/docs/start/');
+  const deploy = docsSectionForHref('/docs/deploy/');
+  const integrate = docsSectionForHref('/docs/integrate/');
+  const operate = docsSectionForHref('/docs/operate/');
+  const benchmarks = docsSectionForHref('/docs/benchmarks/');
+  const reference = docsSectionForHref('/docs/reference/');
+  const referenceConfiguration = reference?.links.find(
+    (link) => link.href === '/docs/reference/configuration/',
+  );
 
   return (
     <footer className="site">
@@ -86,26 +94,28 @@ export function SiteFooter() {
           </p>
         </div>
         <div className="col">
-          <h5>{start.label}</h5>
+          <h5>{start?.label ?? 'Start'}</h5>
           <Link href="/docs/">Documentation</Link>
-          {start.links.map((link) => (
+          {start?.links.map((link) => (
             <Link href={link.href} key={link.href}>{link.label}</Link>
           ))}
         </div>
         <div className="col">
           <h5>Build</h5>
-          <Link href={deploy.href}>{deploy.label}</Link>
-          <Link href={integrate.href}>{integrate.label}</Link>
-          {deploy.links.slice(1, 3).map((link) => (
+          {deploy ? <Link href={deploy.href}>{deploy.label}</Link> : null}
+          {integrate ? <Link href={integrate.href}>{integrate.label}</Link> : null}
+          {deploy?.links.slice(1, 3).map((link) => (
             <Link href={link.href} key={link.href}>{link.label}</Link>
           ))}
         </div>
         <div className="col">
           <h5>Operate</h5>
-          <Link href={operate.href}>{operate.label}</Link>
-          <Link href={benchmarks.href}>{benchmarks.label}</Link>
-          <Link href={reference.href}>{reference.label}</Link>
-          <Link href={reference.links[0].href}>{reference.links[0].label}</Link>
+          {operate ? <Link href={operate.href}>{operate.label}</Link> : null}
+          {benchmarks ? <Link href={benchmarks.href}>{benchmarks.label}</Link> : null}
+          {reference ? <Link href={reference.href}>{reference.label}</Link> : null}
+          {referenceConfiguration ? (
+            <Link href={referenceConfiguration.href}>{referenceConfiguration.label}</Link>
+          ) : null}
         </div>
       </div>
     </footer>
