@@ -1,6 +1,11 @@
-# Tune batching and timeouts
+---
+title: Tune batching
+description: Tune Khone wait windows, batch sizes, timeouts, tenant keys, and payload limits per route.
+---
 
-Tune one route at a time and record the workload, target memory, backend delay, `maxWaitMs`,
+# Tune batching
+
+Tune one route at a time. Record the workload, target memory, backend delay, `maxWaitMs`,
 `maxBatchSize`, and whether the route uses steady, adaptive, or target-aware batching.
 
 ## Start with conservative bounds
@@ -54,10 +59,12 @@ x-khone:
     warmupProbes: 1
 ```
 
-The gateway starts from the minimum wait path and updates duration-derived waits after probe
-samples are available.
+The gateway starts from the minimum wait path and updates duration-derived waits after probe samples
+are available.
 
 ## Watch payload size
 
-`MaxInvokePayloadBytes` defaults to 6 MiB. Keep request bodies small enough for batch payloads to
-fit the Lambda invoke limit. A single request that cannot fit fails.
+`MaxInvokePayloadBytes` defaults to 6 MiB. Keep request bodies small enough for batch payloads to fit
+the Lambda invoke limit. A single request that cannot fit fails.
+
+See [Configuration](../reference/configuration.md) for every batching field and default.

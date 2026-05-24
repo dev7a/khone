@@ -1,8 +1,13 @@
-# Observability reference
+---
+title: Observability
+description: Enable Khone traces, CloudWatch EMF metrics, profiling metrics, and debug response headers.
+---
 
-The gateway exposes OpenTelemetry traces and CloudWatch EMF metrics. It does not export
-OpenTelemetry metrics; when OpenTelemetry tracing is enabled, the gateway sets
-`OTEL_METRICS_EXPORTER=none` if the variable is unset.
+# Observability
+
+Use traces and metrics together. Gateway latency, batch size, target invocation duration, and 429
+sources can move independently, especially when LMI scales out into multiple independent execution
+environments.
 
 ## OpenTelemetry traces
 
@@ -26,17 +31,20 @@ Common variables:
 - `KHONE_OBSERVABILITY_VENDOR=AWSXRAY` (exact match, case-sensitive)
 - `OTEL_PROPAGATORS` (defaults to `xray,tracecontext,baggage`)
 - `OTEL_EXPORTER_OTLP_HEADERS` or `OTEL_EXPORTER_OTLP_TRACES_HEADERS`
-- `KHONE_OTEL_HEADERS_JSON` — JSON object of header names to string values. The gateway encodes it
+- `KHONE_OTEL_HEADERS_JSON` - JSON object of header names to string values. The gateway encodes it
   into `OTEL_EXPORTER_OTLP_HEADERS` at startup if neither headers variable is already set.
 
-## EMF metrics
+The gateway does not export OpenTelemetry metrics. When OpenTelemetry tracing is enabled, it sets
+`OTEL_METRICS_EXPORTER=none` if the variable is unset.
+
+## CloudWatch EMF metrics
 
 Enable EMF by setting `KHONE_EMF_METRICS` to a truthy value. The truthy parser accepts `1`,
 `true`/`TRUE`, `yes`/`YES`, or `on`/`ON`.
 
-- `KHONE_EMF_METRICS=1` — enable EMF emission.
-- `KHONE_EMF_NAMESPACE=KhoneGateway` — CloudWatch namespace (default `KhoneGateway`).
-- `KHONE_EMF_HIGH_RES=1` — request high storage resolution.
+- `KHONE_EMF_METRICS=1` enables EMF emission.
+- `KHONE_EMF_NAMESPACE=KhoneGateway` sets the CloudWatch namespace. The default is `KhoneGateway`.
+- `KHONE_EMF_HIGH_RES=1` requests high storage resolution.
 
 Dimension sets:
 
@@ -73,10 +81,11 @@ adds overhead.
 
 ## Debug response headers
 
-Setting `KHONE_DEBUG_RESPONSE_HEADERS` to a truthy value adds the following headers to every
-gateway response:
+Setting `KHONE_DEBUG_RESPONSE_HEADERS` to a truthy value adds these headers to every gateway
+response:
 
 - `x-khone-batch-size`
 - `x-khone-target-elapsed-ms`
 
-Use it during integration or load testing only; it leaks internal scheduling information.
+Use debug headers during integration or load testing only; they leak internal scheduling
+information.

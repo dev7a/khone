@@ -1,11 +1,17 @@
+---
+title: Reference
+description: Exact fields, protocol shapes, adapter APIs, bootstrap behavior, and benchmark CLI options.
+---
+
 # Reference
 
-Reference pages describe stable contracts, fields, protocols, and command surfaces.
+Use reference pages when you need exact names, fields, defaults, payloads, or command options.
 
-- [Configuration](config.md)
-- [Batch and response protocol](batch-and-response-protocol.md)
-- [Interleaved streaming protocol](interleaved-streaming-protocol.md)
-- [Observability](observability.md)
-- [Bootstrap macro and config publisher](bootstrap-macro.md)
+- [Configuration](configuration.md)
+- [Batch protocol](batch-protocol.md)
+- [Streaming protocol](streaming-protocol.md)
+- [Bootstrap macro](bootstrap-macro.md)
 - [SDK adapters](sdk-adapters.md)
 - [Benchmark CLI](benchmark-cli.md)
+
+For operational observability fields, see [Observability](../operate/observability.md).

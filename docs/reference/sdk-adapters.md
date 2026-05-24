@@ -1,4 +1,9 @@
-# SDK adapters reference
+---
+title: SDK adapters
+description: Node and Rust adapter APIs for buffered and response-streaming Khone target handlers.
+---
+
+# SDK adapters
 
 Adapters convert normal single-request handlers into batch handlers compatible with the gateway.
 Two adapters are available: Node (`khone-lambda-adapter`) and Rust (`khone-lambda-adapter`).

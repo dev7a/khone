@@ -25,5 +25,5 @@ make examples-sam-deploy \
   GATEWAY_CAPACITY_PROVIDER_ARN=arn:aws:lambda:...
 ```
 
-See [Deploy the example templates](../../docs/how-to/deploy-demo-stack.md) for deployment and route
-examples. The first-time walkthrough is [First LMI deployment](../../docs/tutorials/first-lmi-deployment.md).
+See [Example templates](../../docs/deploy/examples.md) for deployment and route examples. The
+first-time walkthrough is the [Quickstart](../../docs/start/quickstart.md).

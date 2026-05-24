@@ -7,9 +7,8 @@ The bootstrap stack installs the account/region resources used by application st
 - `KhoneGateway` CloudFormation macro.
 - shared Mode A runtime API proxy layers.
 
-See [Bootstrap macro and config publisher](../docs/reference/bootstrap-macro.md) for the resource
-contract and [Deploy your own SAM gateway](../docs/how-to/deploy-your-own-sam-gateway.md) for the
-application-stack pattern.
+See [Bootstrap macro](../docs/reference/bootstrap-macro.md) for the resource contract and
+[SAM gateway](../docs/deploy/sam-gateway.md) for the application-stack pattern.
 
 Deploy from the repository root:
 

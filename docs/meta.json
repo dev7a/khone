@@ -2,9 +2,11 @@
   "title": "Khone Docs",
   "pages": [
     "index",
-    "tutorials",
-    "how-to",
-    "reference",
-    "explanation"
+    "start",
+    "deploy",
+    "integrate",
+    "operate",
+    "benchmarks",
+    "reference"
   ]
 }

@@ -1,13 +1,21 @@
 import Link from 'next/link';
 import { GitHubMark } from '@/components/github-mark';
 import { ThemeToggle } from '@/components/theme-toggle';
+import { docsHeaderLinks, docsSectionForHref } from '@/lib/docs-nav';
 
 const navItems = [
   { href: '/docs/', label: 'Docs' },
-  { href: '/docs/reference/config/', label: 'Reference' },
-  { href: 'https://github.com/dev7a/khone/tree/main/examples', label: 'Examples', external: true },
-  { href: '/docs/explanation/performance-and-cost/', label: 'Benchmarks' },
+  ...docsHeaderLinks,
 ];
+
+function currentNavHref(currentPath?: string) {
+  if (!currentPath) return undefined;
+
+  return navItems
+    .filter((item) => currentPath === item.href || currentPath.startsWith(item.href))
+    .sort((a, b) => b.href.length - a.href.length)
+    .at(0)?.href;
+}
 
 function Brand({ showPron = true }: { showPron?: boolean }) {
   return (
@@ -33,7 +41,9 @@ function Brand({ showPron = true }: { showPron?: boolean }) {
   );
 }
 
-export function SiteHeader({ active }: { active?: 'docs' | 'home' }) {
+export function SiteHeader({ currentPath }: { currentPath?: string }) {
+  const activeHref = currentNavHref(currentPath);
+
   return (
     <header className="site">
       <div className="inner">
@@ -45,9 +55,7 @@ export function SiteHeader({ active }: { active?: 'docs' | 'home' }) {
             <Link
               key={item.href}
               href={item.href}
-              aria-current={active === 'docs' && item.label === 'Docs' ? 'page' : undefined}
-              target={item.external ? '_blank' : undefined}
-              rel={item.external ? 'noopener noreferrer' : undefined}
+              aria-current={activeHref === item.href ? 'page' : undefined}
             >
               {item.label}
             </Link>
@@ -71,6 +79,20 @@ export function SiteHeader({ active }: { active?: 'docs' | 'home' }) {
 }
 
 export function SiteFooter() {
+  const start = docsSectionForHref('/docs/start/');
+  const deploy = docsSectionForHref('/docs/deploy/');
+  const integrate = docsSectionForHref('/docs/integrate/');
+  const operate = docsSectionForHref('/docs/operate/');
+  const benchmarks = docsSectionForHref('/docs/benchmarks/');
+  const reference = docsSectionForHref('/docs/reference/');
+  const deployFooterLinks = [
+    '/docs/deploy/examples/',
+    '/docs/deploy/sam-gateway/',
+  ].flatMap((href) => deploy?.links.find((link) => link.href === href) ?? []);
+  const referenceConfiguration = reference?.links.find(
+    (link) => link.href === '/docs/reference/configuration/',
+  );
+
   return (
     <footer className="site">
       <div className="inner">
@@ -87,22 +109,28 @@ export function SiteFooter() {
           </p>
         </div>
         <div className="col">
-          <h5>Project</h5>
+          <h5>{start?.label ?? 'Start'}</h5>
           <Link href="/docs/">Documentation</Link>
-          <Link href="https://github.com/dev7a/khone">GitHub</Link>
-          <Link href="/docs/explanation/project-scope/">Project scope</Link>
+          {start?.links.map((link) => (
+            <Link href={link.href} key={link.href}>{link.label}</Link>
+          ))}
         </div>
         <div className="col">
-          <h5>Reference</h5>
-          <Link href="/docs/reference/config/">Configuration</Link>
-          <Link href="/docs/reference/batch-and-response-protocol/">Batch protocol</Link>
-          <Link href="/docs/reference/observability/">Observability</Link>
+          <h5>Build</h5>
+          {deploy ? <Link href={deploy.href}>{deploy.label}</Link> : null}
+          {integrate ? <Link href={integrate.href}>{integrate.label}</Link> : null}
+          {deployFooterLinks.map((link) => (
+            <Link href={link.href} key={link.href}>{link.label}</Link>
+          ))}
         </div>
         <div className="col">
           <h5>Operate</h5>
-          <Link href="/docs/tutorials/first-lmi-deployment/">First LMI deployment</Link>
-          <Link href="/docs/how-to/tune-batching/">Tune batching</Link>
-          <Link href="/docs/explanation/performance-and-cost/">Benchmark snapshot</Link>
+          {operate ? <Link href={operate.href}>{operate.label}</Link> : null}
+          {benchmarks ? <Link href={benchmarks.href}>{benchmarks.label}</Link> : null}
+          {reference ? <Link href={reference.href}>{reference.label}</Link> : null}
+          {referenceConfiguration ? (
+            <Link href={referenceConfiguration.href}>{referenceConfiguration.label}</Link>
+          ) : null}
         </div>
       </div>
     </footer>

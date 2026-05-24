@@ -1,0 +1,10 @@
+{
+  "title": "Benchmarks",
+  "pages": [
+    "index",
+    "results",
+    "methodology",
+    "deploy-stack",
+    "run"
+  ]
+}

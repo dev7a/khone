@@ -27,7 +27,7 @@ gateway still adds a small amount of routing and batching latency.
 
 It is not a general API Gateway replacement. It does not manage auth, DNS, WAF, or LMI capacity
 providers; public deployments are usually best placed behind CloudFront. See
-[Project scope](docs/explanation/project-scope.md) for the full boundary.
+[When Khone helps](docs/start/when-khone-helps.md) for the full boundary.
 
 ## Performance and Cost Snapshot
 
@@ -67,7 +67,7 @@ latency over time, per-stage cost bars, and heatmap summaries.
 
 The standard endpoint had the lowest P95 latency in these runs. Khone's value is the
 cost/throughput tradeoff, not minimum single-request latency. See
-[Performance and cost](docs/explanation/performance-and-cost.md) for the exact scenario metadata,
+[Benchmark results](docs/benchmarks/results.mdx) for the exact scenario metadata,
 caveats, and links to the sanitized reports.
 
 ## Current Deployment Model
@@ -98,16 +98,14 @@ SAM Rust builds require `cargo-lambda` and `SAM_CLI_BETA_RUST_CARGO_LAMBDA=1`.
 
 Start with [the public docs](docs/index.md):
 
-- [Project scope](docs/explanation/project-scope.md)
-- [Performance and cost](docs/explanation/performance-and-cost.md)
-- [First LMI deployment](docs/tutorials/first-lmi-deployment.md)
-- [Deploy your own SAM gateway](docs/how-to/deploy-your-own-sam-gateway.md)
-- [Configuration reference](docs/reference/config.md)
-- [Architecture](docs/explanation/architecture.md)
-- [Benchmarking methodology](docs/explanation/benchmarking-methodology.md)
-
-For a reviewer, the shortest useful path is: scope, architecture, LMI runtime model, bootstrap
-macro reference, performance and cost, then benchmark methodology.
+- [When Khone helps](docs/start/when-khone-helps.md)
+- [Quickstart](docs/start/quickstart.md)
+- [LMI deployment model](docs/deploy/lmi-deployment-model.md)
+- [SAM gateway](docs/deploy/sam-gateway.md)
+- [Choose an integration mode](docs/integrate/choose-mode.md)
+- [Tune batching](docs/operate/tune-batching.md)
+- [Configuration reference](docs/reference/configuration.md)
+- [Benchmark results](docs/benchmarks/results.mdx)
 
 ## Repository Layout
 

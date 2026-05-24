@@ -1,4 +1,9 @@
-# Interleaved streaming protocol
+---
+title: Streaming protocol
+description: Experimental interleaved NDJSON records for per-request streaming from one batched target invocation.
+---
+
+# Streaming protocol
 
 Interleaved streaming is an experimental NDJSON format for chunk-level streaming per request while
 one Lambda invocation handles multiple requests.
@@ -23,8 +28,7 @@ Use it only when each request needs incremental output before the full batch com
 | `type` | `head`, `chunk`, `end`, or `error`. |
 
 The legacy NDJSON shape (terminal-only records with no `type` field) and the interleaved shape are
-auto-detected per record by the presence of `type`; see
-[Batch and response protocol](batch-and-response-protocol.md).
+auto-detected per record by the presence of `type`; see [Batch protocol](batch-protocol.md).
 
 ## `head`
 

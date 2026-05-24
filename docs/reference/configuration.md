@@ -1,4 +1,9 @@
-# Configuration reference
+---
+title: Configuration
+description: GatewayConfig, Spec, x-khone, adaptive wait, and target-aware wait fields.
+---
+
+# Configuration
 
 Gateway config is YAML with PascalCase top-level fields. The config publisher embeds the OpenAPI-ish
 `Spec` into the same manifest consumed by the gateway via `KHONE_CONFIG_URI`.
@@ -23,8 +28,7 @@ Numeric fields and the boolean `profiling` may be written as numbers/booleans or
 
 The gateway reads the manifest at startup from the `KHONE_CONFIG_URI` environment variable
 (`s3://<bucket>/<key>`). The macro exposes the `ConfigS3Uri` attribute so that application templates
-can set it as `KHONE_CONFIG_URI` on the gateway function; see [Bootstrap macro and config
-publisher](bootstrap-macro.md).
+can set it as `KHONE_CONFIG_URI` on the gateway function; see [Bootstrap macro](bootstrap-macro.md).
 
 ## Header forwarding
 
@@ -66,8 +70,8 @@ Supported HTTP methods are `get`, `post`, `put`, `delete`, `patch`, `head`, and 
 
 | Field | Type | Required | Default | Notes |
 | --- | --- | --- | --- | --- |
-| `maxWaitMs` | u64 (ms) | Yes | — | Maximum time the gateway holds a batch open. |
-| `maxBatchSize` | usize | Yes | — | Maximum requests per batch. Must be greater than zero. |
+| `maxWaitMs` | u64 (ms) | Yes | No default | Maximum time the gateway holds a batch open. |
+| `maxBatchSize` | usize | Yes | No default | Maximum requests per batch. Must be greater than zero. |
 | `key` | string[] | No | `[]` | Extra batch-key dimensions. Supported forms: `header:<name>` and `query:<name>`. The literals `method`, `route`, `lambda`, `target_lambda`, `target-lambda` are accepted and silently ignored (the gateway always keys by these). |
 | `timeoutMs` | u64 (ms) | No | `DefaultTimeoutMs` | Per-operation timeout override. |
 | `invokeMode` | enum | No | `buffered` | One of `buffered` or `response_stream`. |
@@ -86,7 +90,7 @@ and a fixed `maxWaitMs` either over-waits at low traffic or under-batches at hig
 
 | Field | Type | Required | Default | Notes |
 | --- | --- | --- | --- | --- |
-| `minWaitMs` | u64 (ms) | Yes | — | Floor of the computed window. Must be `<= maxWaitMs`. |
+| `minWaitMs` | u64 (ms) | Yes | No default | Floor of the computed window. Must be `<= maxWaitMs`. |
 | `targetRps` | f64 | No | `50.0` | Request rate where the sigmoid is centered. Must be finite and non-negative. |
 | `steepness` | f64 | No | `0.01` | Sigmoid steepness around `targetRps`. Must be finite and greater than zero. |
 | `samplingIntervalMs` | u64 (ms) | No | `100` | Sampling period for request counts. Must be greater than zero. |
@@ -110,7 +114,7 @@ positive feedback loop that would result from measuring batched durations.
 
 | Field | Type | Required | Default | Notes |
 | --- | --- | --- | --- | --- |
-| `fraction` | f64 | Yes | — | Multiplier applied to the smoothed probe duration. Must be finite and non-negative. |
+| `fraction` | f64 | Yes | No default | Multiplier applied to the smoothed probe duration. Must be finite and non-negative. |
 | `minWaitMs` | u64 (ms) | No | `0` | Floor of the computed window. Must be `<= maxWaitMs`. |
 | `probeIntervalMs` | u64 (ms) | No | `30000` | How often to schedule a single-request probe flush per batch key. Must be greater than zero. |
 | `probeJitterMs` | u64 (ms) | No | `1000` | Stable per-batch-key jitter applied to the probe schedule. |

@@ -1,3 +1,8 @@
+---
+title: Deploy the benchmark stack
+description: Deploy the dedicated Khone benchmark gateway, target handlers, standard baseline, and backend workload.
+---
+
 # Deploy the benchmark stack
 
 The benchmark stack deploys a dedicated LMI gateway, three Mode A proxy-layer target handlers, a
