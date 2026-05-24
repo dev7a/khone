@@ -46,6 +46,8 @@ function sourcePathForFile(file: VFile) {
 function routePathForSourcePath(sourcePath: string) {
   const withoutExtension = sourcePath.replace(/\.mdx?$/, '');
 
+  if (withoutExtension === 'index') return '';
+
   return withoutExtension.endsWith('/index')
     ? withoutExtension.slice(0, -'/index'.length)
     : withoutExtension;
@@ -91,10 +93,7 @@ function routeForMarkdownLink(href: string, sourcePath: string) {
   );
   if (targetSourcePath.startsWith('..')) return href;
 
-  const withoutExtension = targetSourcePath.replace(/\.mdx?$/, '');
-  const routePath = withoutExtension.endsWith('/index')
-    ? withoutExtension.slice(0, -'/index'.length)
-    : withoutExtension;
+  const routePath = routePathForSourcePath(targetSourcePath);
 
   return `/docs/${routePath ? `${routePath}/` : ''}${suffix}`;
 }
