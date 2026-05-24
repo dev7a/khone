@@ -39,9 +39,9 @@ that backend sleeps before returning JSON. The backend delay is part of the scen
 ## Cost summary
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="/docs/assets/performance-cost/cost-estimate-summary-dark.svg">
-  <source media="(prefers-color-scheme: light)" srcset="/docs/assets/performance-cost/cost-estimate-summary-light.svg">
-  <img alt="Estimated target invocation cost by endpoint, normalized to the standard endpoint" src="/docs/assets/performance-cost/cost-estimate-summary-light.svg">
+  <source media="(prefers-color-scheme: dark)" srcset="../../assets/performance-cost/cost-estimate-summary-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="../../assets/performance-cost/cost-estimate-summary-light.svg">
+  <img alt="Estimated target invocation cost by endpoint, normalized to the standard endpoint" src="../../assets/performance-cost/cost-estimate-summary-light.svg">
 </picture>
 
 The cost bars are normalized to the standard endpoint at 100%. In this benchmark, target-aware
@@ -61,9 +61,9 @@ batching had the lowest estimated target invocation cost, especially at higher t
 ## Latency summary
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="/docs/assets/performance-cost/p95-latency-summary-dark.svg">
-  <source media="(prefers-color-scheme: light)" srcset="/docs/assets/performance-cost/p95-latency-summary-light.svg">
-  <img alt="P95 latency by endpoint for low and high traffic profiles" src="/docs/assets/performance-cost/p95-latency-summary-light.svg">
+  <source media="(prefers-color-scheme: dark)" srcset="../../assets/performance-cost/p95-latency-summary-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="../../assets/performance-cost/p95-latency-summary-light.svg">
+  <img alt="P95 latency by endpoint for low and high traffic profiles" src="../../assets/performance-cost/p95-latency-summary-light.svg">
 </picture>
 
 The standard endpoint was fastest in these runs because it avoids the Khone gateway hop and batching
@@ -84,17 +84,17 @@ for each endpoint.
 ### Low traffic, round 2
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="/docs/benchmark-results-public/low-256mb-min4-1-10-50-round2/charts/dark/latency-distribution.png">
-  <source media="(prefers-color-scheme: light)" srcset="/docs/benchmark-results-public/low-256mb-min4-1-10-50-round2/charts/light/latency-distribution.png">
-  <img alt="Low traffic benchmark latency distribution and stage cost by endpoint" src="/docs/benchmark-results-public/low-256mb-min4-1-10-50-round2/charts/light/latency-distribution.png">
+  <source media="(prefers-color-scheme: dark)" srcset="../../benchmark-results-public/low-256mb-min4-1-10-50-round2/charts/dark/latency-distribution.png">
+  <source media="(prefers-color-scheme: light)" srcset="../../benchmark-results-public/low-256mb-min4-1-10-50-round2/charts/light/latency-distribution.png">
+  <img alt="Low traffic benchmark latency distribution and stage cost by endpoint" src="../../benchmark-results-public/low-256mb-min4-1-10-50-round2/charts/light/latency-distribution.png">
 </picture>
 
 ### High traffic, round 2
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="/docs/benchmark-results-public/high-256mb-min4-50-100-150-round2/charts/dark/latency-distribution.png">
-  <source media="(prefers-color-scheme: light)" srcset="/docs/benchmark-results-public/high-256mb-min4-50-100-150-round2/charts/light/latency-distribution.png">
-  <img alt="High traffic benchmark latency distribution and stage cost by endpoint" src="/docs/benchmark-results-public/high-256mb-min4-50-100-150-round2/charts/light/latency-distribution.png">
+  <source media="(prefers-color-scheme: dark)" srcset="../../benchmark-results-public/high-256mb-min4-50-100-150-round2/charts/dark/latency-distribution.png">
+  <source media="(prefers-color-scheme: light)" srcset="../../benchmark-results-public/high-256mb-min4-50-100-150-round2/charts/light/latency-distribution.png">
+  <img alt="High traffic benchmark latency distribution and stage cost by endpoint" src="../../benchmark-results-public/high-256mb-min4-50-100-150-round2/charts/light/latency-distribution.png">
 </picture>
 
 ## Concurrency and cold starts
@@ -123,9 +123,9 @@ The estimate is still not a substitute for an AWS bill:
 
 ## Public report links
 
-- [High traffic, round 1](/docs/benchmark-results-public/high-256mb-min4-50-100-150-round1/report.md)
-- [High traffic, round 2](/docs/benchmark-results-public/high-256mb-min4-50-100-150-round2/report.md)
-- [Low traffic, round 1](/docs/benchmark-results-public/low-256mb-min4-1-10-50-round1/report.md)
-- [Low traffic, round 2](/docs/benchmark-results-public/low-256mb-min4-1-10-50-round2/report.md)
+- [High traffic, round 1](../../benchmark-results-public/high-256mb-min4-50-100-150-round1/report.md)
+- [High traffic, round 2](../../benchmark-results-public/high-256mb-min4-50-100-150-round2/report.md)
+- [Low traffic, round 1](../../benchmark-results-public/low-256mb-min4-1-10-50-round1/report.md)
+- [Low traffic, round 2](../../benchmark-results-public/low-256mb-min4-1-10-50-round2/report.md)
 
 Read [Benchmark methodology](methodology.md) before comparing these numbers to another workload.
