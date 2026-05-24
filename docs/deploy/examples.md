@@ -1,15 +1,20 @@
-# Deploy the example templates
+---
+title: Example templates
+description: Deploy the included SAM examples by integration mode and language.
+---
 
-The SAM examples are split into individually deployable templates. Each template deploys one Khone
-gateway plus the target Lambda functions needed to show a specific mode or language.
+# Example templates
+
+The SAM examples are individually deployable. Each template owns one Khone gateway and the target
+Lambda functions needed to show a specific integration mode or language.
 
 | Template | Shows | Stack name |
 | --- | --- | --- |
-| `layer-proxy-node` | Layer proxy, Mode A with an unmodified Node handler | `khone-layer-proxy-node` |
-| `layer-proxy-python` | Layer proxy, Mode A with an unmodified Python handler | `khone-layer-proxy-python` |
-| `adapter-node` | Adapter, Mode B Node targets for buffered, response-streaming, and SSE-style responses | `khone-adapter-node` |
-| `adapter-rust` | Adapter, Mode B Rust target for buffered responses | `khone-adapter-rust` |
-| `native-batch-node` | Native batch, Mode C Node handler with fixed, adaptive, target-aware, and streaming routes | `khone-native-batch-node` |
+| [`layer-proxy-node`](https://github.com/dev7a/khone/blob/main/examples/sam/templates/layer-proxy-node/template.yaml) | Layer proxy, Mode A with an unmodified Node handler | `khone-layer-proxy-node` |
+| [`layer-proxy-python`](https://github.com/dev7a/khone/blob/main/examples/sam/templates/layer-proxy-python/template.yaml) | Layer proxy, Mode A with an unmodified Python handler | `khone-layer-proxy-python` |
+| [`adapter-node`](https://github.com/dev7a/khone/blob/main/examples/sam/templates/adapter-node/template.yaml) | Adapter, Mode B Node targets for buffered, response-streaming, and SSE-style responses | `khone-adapter-node` |
+| [`adapter-rust`](https://github.com/dev7a/khone/blob/main/examples/sam/templates/adapter-rust/template.yaml) | Adapter, Mode B Rust target for buffered responses | `khone-adapter-rust` |
+| [`native-batch-node`](https://github.com/dev7a/khone/blob/main/examples/sam/templates/native-batch-node/template.yaml) | Native batch, Mode C Node handler with fixed, adaptive, target-aware, and streaming routes | `khone-native-batch-node` |
 
 ## Prerequisites
 
@@ -31,7 +36,7 @@ make examples-sam-deploy \
   GATEWAY_CAPACITY_PROVIDER_ARN=arn:aws:lambda:...
 ```
 
-Layer proxy templates, Mode A, also need the bootstrap layer export. The Makefile resolves
+Layer proxy templates also need the bootstrap layer export. The Makefile resolves
 `KhoneLayerArm64Arn` automatically when a template declares that parameter.
 
 Or run SAM directly from one template directory:

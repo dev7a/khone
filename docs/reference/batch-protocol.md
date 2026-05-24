@@ -1,4 +1,9 @@
-# Batch and response protocol
+---
+title: Batch protocol
+description: JSON batch request and per-request response payloads used by Khone target Lambdas.
+---
+
+# Batch protocol
 
 The gateway invokes target Lambda functions with a JSON batch payload. Each batch item is shaped
 like an API Gateway HTTP API v2 event.
@@ -78,7 +83,7 @@ For routes with `invokeMode: buffered`, the target returns one JSON document:
 Buffered responses may arrive in any order. The gateway waits for each response or times out the
 affected request.
 
-## Streaming response (legacy NDJSON)
+## Streaming response, legacy NDJSON
 
 Routes with `invokeMode: response_stream` may use a legacy NDJSON shape: one terminal response
 record per request, delimited by `\n`.
@@ -90,8 +95,8 @@ record per request, delimited by `\n`.
 Records are processed in arrival order off the Lambda response stream. Unknown ids are dropped.
 
 For incremental record framing (`head`, `chunk`, `end`, `error`) within a single streamed response,
-see [Interleaved streaming protocol](interleaved-streaming-protocol.md). The two shapes are
-auto-detected per record by the presence of a `type` field.
+see [Streaming protocol](streaming-protocol.md). The two shapes are auto-detected per record by the
+presence of a `type` field.
 
 ## Common response fields
 

@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { ReactNode } from 'react';
 import { SiteFooter, SiteHeader } from '@/components/site-frame';
+import { docsNavSections, docsSectionForSlug } from '@/lib/docs-nav';
 import { source } from '@/lib/source';
 
 interface Props {
@@ -9,50 +10,6 @@ interface Props {
     slug?: string[];
   }>;
 }
-
-const sidebar = [
-  {
-    title: 'Tutorials',
-    links: [
-      { href: '/docs/tutorials/first-lmi-deployment/', label: 'First LMI deployment' },
-    ],
-  },
-  {
-    title: 'How-to',
-    links: [
-      { href: '/docs/how-to/deploy-your-own-sam-gateway/', label: 'Deploy your own SAM gateway' },
-      { href: '/docs/how-to/deploy-demo-stack/', label: 'Deploy the example templates' },
-      { href: '/docs/how-to/deploy-benchmark-stack/', label: 'Deploy the benchmark stack' },
-      { href: '/docs/how-to/run-benchmarks/', label: 'Run benchmarks' },
-      { href: '/docs/how-to/tune-batching/', label: 'Tune batching and timeouts' },
-      { href: '/docs/how-to/integrate-handlers/', label: 'Integrate Lambda handlers' },
-      { href: '/docs/how-to/use-mode-a-layer-proxy/', label: 'Use the layer proxy, Mode A' },
-    ],
-  },
-  {
-    title: 'Reference',
-    links: [
-      { href: '/docs/reference/config/', label: 'Configuration' },
-      { href: '/docs/reference/batch-and-response-protocol/', label: 'Batch & response protocol' },
-      { href: '/docs/reference/interleaved-streaming-protocol/', label: 'Interleaved streaming' },
-      { href: '/docs/reference/observability/', label: 'Observability' },
-      { href: '/docs/reference/bootstrap-macro/', label: 'Bootstrap macro' },
-      { href: '/docs/reference/sdk-adapters/', label: 'SDK adapters' },
-      { href: '/docs/reference/benchmark-cli/', label: 'Benchmark CLI' },
-    ],
-  },
-  {
-    title: 'Explanation',
-    links: [
-      { href: '/docs/explanation/architecture/', label: 'Architecture' },
-      { href: '/docs/explanation/project-scope/', label: 'Project scope' },
-      { href: '/docs/explanation/performance-and-cost/', label: 'Performance and cost' },
-      { href: '/docs/explanation/integration-modes/', label: 'Integration modes' },
-      { href: '/docs/explanation/lmi-runtime-model/', label: 'LMI runtime model' },
-      { href: '/docs/explanation/benchmarking-methodology/', label: 'Benchmarking methodology' },
-    ],
-  },
-];
 
 function titleFromSlug(slug?: string[]) {
   const last = slug?.at(-1) ?? 'docs';
@@ -69,9 +26,17 @@ function currentDocPath(slug?: string[]) {
 function DocsSidebar({ current }: { current: string }) {
   return (
     <aside className="docs-sidebar" aria-label="Documentation navigation">
-      {sidebar.map((group) => (
-        <section className="side-section" key={group.title}>
-          <h2>{group.title}</h2>
+      {docsNavSections.map((group) => (
+        <section className="side-section" key={group.href}>
+          <h2>
+            <Link
+              href={group.href}
+              className={current === group.href ? 'active' : undefined}
+              aria-current={current === group.href ? 'page' : undefined}
+            >
+              {group.label}
+            </Link>
+          </h2>
           <ul>
             {group.links.map((link) => (
               <li key={link.href}>
@@ -119,13 +84,7 @@ function PageToc({ items }: { items: TocItem[] }) {
 }
 
 function sectionLabel(slug?: string[]) {
-  const section = slug?.[0];
-  if (!section) return 'Overview';
-  if (section === 'how-to') return 'How-To Guides';
-  return section
-    .split('-')
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(' ');
+  return docsSectionForSlug(slug)?.label ?? 'Overview';
 }
 
 export default async function Page({ params }: Props) {

@@ -8,5 +8,5 @@ This SAM stack deploys the dedicated benchmark environment:
 - Standard API Gateway HTTP API baseline.
 - Shared backend Lambda URL workload.
 
-See [Deploy the benchmark stack](../../docs/how-to/deploy-benchmark-stack.md) for deployment steps
-and [Run benchmarks](../../docs/how-to/run-benchmarks.md) for `benchviz` usage.
+See [Deploy the benchmark stack](../../docs/benchmarks/deploy-stack.md) for deployment steps and
+[Run benchmarks](../../docs/benchmarks/run.md) for `benchviz` usage.

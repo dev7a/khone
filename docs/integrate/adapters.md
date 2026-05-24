@@ -1,13 +1,14 @@
-# Integrate Lambda handlers
+---
+title: Adapters
+description: Wrap normal Node and Rust Lambda handlers so they can receive Khone batched requests.
+---
 
-Khone supports three target Lambda integrations.
-
-## Use adapters, Mode B, for most handlers
+# Adapters
 
 Adapters, Mode B, wrap a single-request handler and map each batch item into a normal API Gateway
-HTTP API v2 event.
+HTTP API v2 event. Use adapters for most new or modifiable handlers.
 
-Node:
+## Node buffered handler
 
 ```javascript
 const { batchAdapter } = require("khone-lambda-adapter");
@@ -17,7 +18,7 @@ exports.handler = batchAdapter(async function handler(event) {
 });
 ```
 
-Rust:
+## Rust buffered handler
 
 ```rust
 use std::convert::Infallible;
@@ -42,11 +43,11 @@ async fn entrypoint(
 }
 ```
 
-The Node package is `khone-lambda-adapter`; the Rust crate is `khone-lambda-adapter` (depend via
-git or path until publication). Both default `concurrency` to `16`; override with
-`{ concurrency }` or `.with_concurrency(...)`.
+The Node package is `khone-lambda-adapter`; the Rust crate is `khone-lambda-adapter` (depend via git
+or path until publication). Both default `concurrency` to `16`; override with `{ concurrency }` in
+Node or `.with_concurrency(...)` in Rust.
 
-## Use response streaming when early return matters
+## Response streaming
 
 Routes with `invokeMode: response_stream` expect NDJSON response records. The adapters provide
 streaming helpers:
@@ -62,13 +63,12 @@ use khone_lambda_adapter::batch_adapter_stream;
 let adapter = batch_adapter_stream(handler);
 ```
 
-Enable interleaved per-request chunk streaming with `{ interleaved: true }` (Node) or
-`.with_interleaved(true)` (Rust). See [Interleaved streaming protocol](../reference/interleaved-streaming-protocol.md).
+Enable interleaved per-request chunk streaming with `{ interleaved: true }` in Node or
+`.with_interleaved(true)` in Rust. See the [Streaming protocol](../reference/streaming-protocol.md)
+for the wire shape.
 
-## Use native batch, Mode C, for custom batch handling
+## Read next
 
-Native batch handlers, Mode C, receive `event.batch` directly and return the gateway protocol
-documented in [Batch and response protocol](../reference/batch-and-response-protocol.md).
-
-Use native batch when the handler needs custom fan-out, shared work across items, or a response
-shape the adapters do not cover.
+- Use [Native batch](native-batch.md) when the handler should see the whole batch.
+- Use [Layer proxy](layer-proxy.md) only when target code cannot change.
+- Look up exact APIs in [SDK adapters](../reference/sdk-adapters.md).

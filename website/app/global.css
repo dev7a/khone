@@ -156,6 +156,22 @@ samp {
   color: var(--accent);
 }
 
+.side-section h2 a {
+  margin-left: 0;
+  border-left: 0;
+  border-radius: 0;
+  padding: 0;
+  color: inherit;
+  font: inherit;
+  text-transform: inherit;
+}
+
+.side-section h2 a:hover,
+.side-section h2 a.active {
+  background: transparent;
+  color: var(--accent);
+}
+
 .side-section {
   margin: 0;
 }
@@ -1563,7 +1579,7 @@ section.block {
 
 .docmap {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 1px;
   overflow: hidden;
   border: 1px solid var(--line);
@@ -1588,6 +1604,13 @@ section.block {
   font-weight: 500;
   letter-spacing: 0.14em;
   text-transform: uppercase;
+}
+
+.docmap .col p {
+  margin: 0;
+  color: var(--fg-2);
+  font-size: 13.5px;
+  line-height: 1.55;
 }
 
 .docmap .col ul {

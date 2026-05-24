@@ -1,12 +1,11 @@
 import Link from 'next/link';
 import { GitHubMark } from '@/components/github-mark';
 import { ThemeToggle } from '@/components/theme-toggle';
+import { docsHeaderLinks, docsNavSections } from '@/lib/docs-nav';
 
 const navItems = [
   { href: '/docs/', label: 'Docs' },
-  { href: '/docs/reference/config/', label: 'Reference' },
-  { href: 'https://github.com/dev7a/khone/tree/main/examples', label: 'Examples', external: true },
-  { href: '/docs/explanation/performance-and-cost/', label: 'Benchmarks' },
+  ...docsHeaderLinks,
 ];
 
 function Brand({ showPron = true }: { showPron?: boolean }) {
@@ -46,8 +45,6 @@ export function SiteHeader({ active }: { active?: 'docs' | 'home' }) {
               key={item.href}
               href={item.href}
               aria-current={active === 'docs' && item.label === 'Docs' ? 'page' : undefined}
-              target={item.external ? '_blank' : undefined}
-              rel={item.external ? 'noopener noreferrer' : undefined}
             >
               {item.label}
             </Link>
@@ -71,6 +68,8 @@ export function SiteHeader({ active }: { active?: 'docs' | 'home' }) {
 }
 
 export function SiteFooter() {
+  const [start, deploy, integrate, operate, benchmarks, reference] = docsNavSections;
+
   return (
     <footer className="site">
       <div className="inner">
@@ -87,22 +86,26 @@ export function SiteFooter() {
           </p>
         </div>
         <div className="col">
-          <h5>Project</h5>
+          <h5>{start.label}</h5>
           <Link href="/docs/">Documentation</Link>
-          <Link href="https://github.com/dev7a/khone">GitHub</Link>
-          <Link href="/docs/explanation/project-scope/">Project scope</Link>
+          {start.links.map((link) => (
+            <Link href={link.href} key={link.href}>{link.label}</Link>
+          ))}
         </div>
         <div className="col">
-          <h5>Reference</h5>
-          <Link href="/docs/reference/config/">Configuration</Link>
-          <Link href="/docs/reference/batch-and-response-protocol/">Batch protocol</Link>
-          <Link href="/docs/reference/observability/">Observability</Link>
+          <h5>Build</h5>
+          <Link href={deploy.href}>{deploy.label}</Link>
+          <Link href={integrate.href}>{integrate.label}</Link>
+          {deploy.links.slice(1, 3).map((link) => (
+            <Link href={link.href} key={link.href}>{link.label}</Link>
+          ))}
         </div>
         <div className="col">
           <h5>Operate</h5>
-          <Link href="/docs/tutorials/first-lmi-deployment/">First LMI deployment</Link>
-          <Link href="/docs/how-to/tune-batching/">Tune batching</Link>
-          <Link href="/docs/explanation/performance-and-cost/">Benchmark snapshot</Link>
+          <Link href={operate.href}>{operate.label}</Link>
+          <Link href={benchmarks.href}>{benchmarks.label}</Link>
+          <Link href={reference.href}>{reference.label}</Link>
+          <Link href={reference.links[0].href}>{reference.links[0].label}</Link>
         </div>
       </div>
     </footer>

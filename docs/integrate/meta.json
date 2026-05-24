@@ -1,0 +1,10 @@
+{
+  "title": "Integrate",
+  "pages": [
+    "index",
+    "choose-mode",
+    "adapters",
+    "native-batch",
+    "layer-proxy"
+  ]
+}

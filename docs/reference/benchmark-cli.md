@@ -1,4 +1,9 @@
-# Benchmark CLI reference
+---
+title: Benchmark CLI
+description: benchviz commands and options for running k6 and rendering Khone benchmark reports.
+---
+
+# Benchmark CLI
 
 `benchviz` runs k6 against a deployed benchmark stack, or renders reports from existing k6 CSV
 files. A bare invocation is equivalent to the `run` subcommand.

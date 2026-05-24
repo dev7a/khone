@@ -1,4 +1,9 @@
-# Bootstrap macro and config publisher
+---
+title: Bootstrap macro
+description: Khone bootstrap resources, gateway config publisher behavior, custom resource attributes, and exported outputs.
+---
+
+# Bootstrap macro
 
 The bootstrap stack installs the per-account/per-region resources that application stacks consume:
 

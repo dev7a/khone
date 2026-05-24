@@ -1,10 +1,14 @@
+---
+title: Run benchmarks
+description: Use benchviz to run k6 against the benchmark stack and generate Khone benchmark reports.
+---
+
 # Run benchmarks
 
 Use `benchviz` to run k6 and generate reports from the benchmark stack.
 
-For the benchmark result narrative, see
-[Performance and cost](../explanation/performance-and-cost.md). This guide is about producing and
-reviewing benchmark artifacts.
+For the public result narrative, see [Benchmark results](results.md). This guide is about producing
+and reviewing benchmark artifacts.
 
 ## Install dependencies
 

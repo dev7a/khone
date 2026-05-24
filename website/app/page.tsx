@@ -2,6 +2,7 @@ import { ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { BatchingSimulator } from '@/components/simulator';
 import { SiteFooter, SiteHeader } from '@/components/site-frame';
+import { docsNavSections } from '@/lib/docs-nav';
 
 export default function HomePage() {
   return (
@@ -28,7 +29,7 @@ export default function HomePage() {
                 waiting on downstream I/O rather than consuming CPU. That&apos;s the whole pitch.
               </p>
               <div className="cta-row">
-                <Link className="btn primary" href="/docs/tutorials/first-lmi-deployment/">
+                <Link className="btn primary" href="/docs/start/quickstart/">
                   Read the docs
                   <ArrowRight className="arrow" size={14} />
                 </Link>
@@ -344,50 +345,23 @@ exports.handler = batchAdapter(handleItem);`}</code>
                 <h2 className="section-title">Read your way in.</h2>
               </div>
               <p className="lede">
-                Public docs follow Diátaxis. Start with project scope and architecture, deploy with
-                the LMI tutorial, and tune with the configuration reference.
+                Start with workload fit and quickstart, deploy the LMI gateway, connect handlers,
+                and keep the exact contracts close when you need them.
               </p>
             </div>
 
             <div className="docmap">
-              <div className="col">
-                <h4>Tutorials</h4>
-                <ul>
-                  <li><Link href="/docs/tutorials/first-lmi-deployment/">First LMI deployment</Link></li>
-                </ul>
-              </div>
-              <div className="col">
-                <h4>How-To</h4>
-                <ul>
-                  <li><Link href="/docs/how-to/deploy-your-own-sam-gateway/">Deploy your own SAM gateway</Link></li>
-                  <li><Link href="/docs/how-to/deploy-demo-stack/">Deploy the example templates</Link></li>
-                  <li><Link href="/docs/how-to/run-benchmarks/">Run benchmarks</Link></li>
-                  <li><Link href="/docs/how-to/tune-batching/">Tune batching and timeouts</Link></li>
-                  <li><Link href="/docs/how-to/integrate-handlers/">Integrate Lambda handlers</Link></li>
-                  <li><Link href="/docs/how-to/use-mode-a-layer-proxy/">Use the layer proxy, Mode A</Link></li>
-                </ul>
-              </div>
-              <div className="col">
-                <h4>Reference</h4>
-                <ul>
-                  <li><Link href="/docs/reference/config/">Configuration</Link></li>
-                  <li><Link href="/docs/reference/batch-and-response-protocol/">Batch & response protocol</Link></li>
-                  <li><Link href="/docs/reference/interleaved-streaming-protocol/">Interleaved streaming</Link></li>
-                  <li><Link href="/docs/reference/observability/">Observability</Link></li>
-                  <li><Link href="/docs/reference/sdk-adapters/">SDK adapters</Link></li>
-                </ul>
-              </div>
-              <div className="col">
-                <h4>Explanation</h4>
-                <ul>
-                  <li><Link href="/docs/explanation/architecture/">Architecture</Link></li>
-                  <li><Link href="/docs/explanation/project-scope/">Project scope</Link></li>
-                  <li><Link href="/docs/explanation/integration-modes/">Integration modes</Link></li>
-                  <li><Link href="/docs/explanation/lmi-runtime-model/">LMI runtime model</Link></li>
-                  <li><Link href="/docs/explanation/performance-and-cost/">Performance & cost</Link></li>
-                  <li><Link href="/docs/explanation/benchmarking-methodology/">Benchmarking methodology</Link></li>
-                </ul>
-              </div>
+              {docsNavSections.map((section) => (
+                <div className="col" key={section.href}>
+                  <h4><Link href={section.href}>{section.label}</Link></h4>
+                  <p>{section.description}</p>
+                  <ul>
+                    {section.links.slice(0, 4).map((link) => (
+                      <li key={link.href}><Link href={link.href}>{link.label}</Link></li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
             </div>
           </div>
         </section>

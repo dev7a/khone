@@ -1,7 +1,12 @@
-# Use the layer proxy, Mode A
+---
+title: Layer proxy
+description: Use the experimental Mode A runtime API proxy for unmodified Lambda target handlers.
+---
 
-Use the layer proxy, Mode A, only when target handler code cannot change. It is experimental and
-runtime-specific.
+# Layer proxy
+
+Use the layer proxy, Mode A, only when target handler code cannot change. It is experimental,
+runtime-specific, and more fragile than adapters.
 
 ## Add the layer
 
@@ -15,7 +20,7 @@ KhoneLayerArm64Arn="$(aws cloudformation list-exports \
 
 ## Configure the exec wrapper
 
-Set these variables in the function's `Environment.Variables` block (not in a shell):
+Set these variables in the function's `Environment.Variables` block, not in a shell:
 
 ```yaml
 Environment:
@@ -34,3 +39,5 @@ Set `KHONE_MAX_CONCURRENCY` to the route `maxBatchSize` as a starting point.
 - Python 3.14 concurrency remains experimental and uses a telemetry file descriptor workaround.
 - User-code streaming is not supported in the layer proxy.
 - Duplicate request ids in a batch are rejected.
+
+Prefer [Adapters](adapters.md) when target code can change.

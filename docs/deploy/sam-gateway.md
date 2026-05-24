@@ -1,4 +1,9 @@
-# Deploy your own SAM gateway
+---
+title: SAM gateway
+description: Define a Khone gateway config resource and gateway Lambda in your own SAM application stack.
+---
+
+# SAM gateway
 
 Use this guide to deploy an application gateway rather than the demo or benchmark stack. The gateway
 function is owned by your SAM template; the macro only publishes the config artifact.
@@ -35,7 +40,7 @@ GatewayConfig:
               invokeMode: buffered
 ```
 
-See [Configuration](../reference/config.md) for field defaults and validation rules.
+See [Configuration](../reference/configuration.md) for field defaults and validation rules.
 
 ## 3. Define the gateway function
 
@@ -74,7 +79,7 @@ routes so the gateway can stream client responses when routes need it.
 
 The gateway execution role needs:
 
-- `s3:GetObject` for the config artifact bucket/prefix.
+- `s3:GetObject` for the config artifact bucket and prefix.
 - `lambda:InvokeFunction` for buffered target routes.
 - `lambda:InvokeWithResponseStream` for response-streaming target routes.
 - CloudWatch Logs permissions for the gateway function.
