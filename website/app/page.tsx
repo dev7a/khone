@@ -7,7 +7,7 @@ import { docsNavSections } from '@/lib/docs-nav';
 export default function HomePage() {
   return (
     <>
-      <SiteHeader active="home" />
+      <SiteHeader />
       <main>
         <section className="hero">
           <div className="grid-bg" />

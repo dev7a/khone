@@ -8,6 +8,15 @@ const navItems = [
   ...docsHeaderLinks,
 ];
 
+function currentNavHref(currentPath?: string) {
+  if (!currentPath) return undefined;
+
+  return navItems
+    .filter((item) => currentPath === item.href || currentPath.startsWith(item.href))
+    .sort((a, b) => b.href.length - a.href.length)
+    .at(0)?.href;
+}
+
 function Brand({ showPron = true }: { showPron?: boolean }) {
   return (
     <span className="brand">
@@ -32,7 +41,9 @@ function Brand({ showPron = true }: { showPron?: boolean }) {
   );
 }
 
-export function SiteHeader({ active }: { active?: 'docs' | 'home' }) {
+export function SiteHeader({ currentPath }: { currentPath?: string }) {
+  const activeHref = currentNavHref(currentPath);
+
   return (
     <header className="site">
       <div className="inner">
@@ -44,7 +55,7 @@ export function SiteHeader({ active }: { active?: 'docs' | 'home' }) {
             <Link
               key={item.href}
               href={item.href}
-              aria-current={active === 'docs' && item.label === 'Docs' ? 'page' : undefined}
+              aria-current={activeHref === item.href ? 'page' : undefined}
             >
               {item.label}
             </Link>

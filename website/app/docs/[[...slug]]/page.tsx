@@ -100,7 +100,7 @@ export default async function Page({ params }: Props) {
 
   return (
     <>
-      <SiteHeader active="docs" />
+      <SiteHeader currentPath={current} />
       <div className="docs-shell">
         <DocsSidebar current={current} />
         <main className="doc" id="content">
