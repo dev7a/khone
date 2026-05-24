@@ -159,7 +159,7 @@ export const docsNavSections: DocsNavSection[] = [
 ];
 
 export const docsHeaderLinks = docsNavSections.filter(
-  (section) => section.label !== 'Benchmarks',
+  (section) => section.href !== '/docs/benchmarks/',
 );
 
 export function docsSectionForSlug(slug?: string[]) {
