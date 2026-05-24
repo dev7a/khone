@@ -164,6 +164,7 @@ export const docsHeaderLinks = docsNavSections.filter(
 
 export function docsSectionForSlug(slug?: string[]) {
   const first = slug?.[0];
+  if (!first) return undefined;
 
   return docsNavSections.find((section) => section.href === `/docs/${first}/`);
 }

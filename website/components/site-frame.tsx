@@ -85,6 +85,10 @@ export function SiteFooter() {
   const operate = docsSectionForHref('/docs/operate/');
   const benchmarks = docsSectionForHref('/docs/benchmarks/');
   const reference = docsSectionForHref('/docs/reference/');
+  const deployFooterLinks = [
+    '/docs/deploy/examples/',
+    '/docs/deploy/sam-gateway/',
+  ].flatMap((href) => deploy?.links.find((link) => link.href === href) ?? []);
   const referenceConfiguration = reference?.links.find(
     (link) => link.href === '/docs/reference/configuration/',
   );
@@ -115,7 +119,7 @@ export function SiteFooter() {
           <h5>Build</h5>
           {deploy ? <Link href={deploy.href}>{deploy.label}</Link> : null}
           {integrate ? <Link href={integrate.href}>{integrate.label}</Link> : null}
-          {deploy?.links.slice(1, 3).map((link) => (
+          {deployFooterLinks.map((link) => (
             <Link href={link.href} key={link.href}>{link.label}</Link>
           ))}
         </div>
