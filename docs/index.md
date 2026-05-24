@@ -43,7 +43,7 @@ gateway, how to connect handlers, how to tune it, and where to look up exact fie
 
 ## Benchmarks
 
-- [Benchmark results](benchmarks/results.md): read the public cost and latency snapshot.
+- [Benchmark results](benchmarks/results.mdx): read the public cost and latency snapshot.
 - [Benchmark methodology](benchmarks/methodology.md): understand what the public reports measure.
 - [Deploy the benchmark stack](benchmarks/deploy-stack.md): create the dedicated benchmark
   environment.

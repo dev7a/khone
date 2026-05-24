@@ -8,7 +8,7 @@ description: How Khone public benchmark reports define endpoints, workload shape
 Benchmarks compare Khone gateway routes against a standard API Gateway HTTP API baseline under the
 same workload shape.
 
-For public result numbers and charts, start with [Benchmark results](results.md). This page explains
+For public result numbers and charts, start with [Benchmark results](results.mdx). This page explains
 how those reports are produced and how to read the measurements.
 
 ## Endpoints

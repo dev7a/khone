@@ -8,7 +8,7 @@ description: Public benchmark results, methodology, stack deployment, and runner
 Use benchmark docs after you understand the workload fit. The public snapshot is intentionally
 I/O-bound and compares Khone batching routes against a direct API Gateway HTTP API baseline.
 
-- [Benchmark results](results.md): cost and latency summaries with public chart artifacts.
+- [Benchmark results](results.mdx): cost and latency summaries with public chart artifacts.
 - [Benchmark methodology](methodology.md): endpoint definitions, workload shape, and measurement
   caveats.
 - [Deploy the benchmark stack](deploy-stack.md): create the dedicated benchmark environment.

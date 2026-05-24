@@ -67,7 +67,7 @@ latency over time, per-stage cost bars, and heatmap summaries.
 
 The standard endpoint had the lowest P95 latency in these runs. Khone's value is the
 cost/throughput tradeoff, not minimum single-request latency. See
-[Benchmark results](docs/benchmarks/results.md) for the exact scenario metadata,
+[Benchmark results](docs/benchmarks/results.mdx) for the exact scenario metadata,
 caveats, and links to the sanitized reports.
 
 ## Current Deployment Model
@@ -105,7 +105,7 @@ Start with [the public docs](docs/index.md):
 - [Choose an integration mode](docs/integrate/choose-mode.md)
 - [Tune batching](docs/operate/tune-batching.md)
 - [Configuration reference](docs/reference/configuration.md)
-- [Benchmark results](docs/benchmarks/results.md)
+- [Benchmark results](docs/benchmarks/results.mdx)
 
 ## Repository Layout
 

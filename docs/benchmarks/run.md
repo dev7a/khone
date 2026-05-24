@@ -7,7 +7,7 @@ description: Use benchviz to run k6 against the benchmark stack and generate Kho
 
 Use `benchviz` to run k6 and generate reports from the benchmark stack.
 
-For the public result narrative, see [Benchmark results](results.md). This guide is about producing
+For the public result narrative, see [Benchmark results](results.mdx). This guide is about producing
 and reviewing benchmark artifacts.
 
 ## Install dependencies

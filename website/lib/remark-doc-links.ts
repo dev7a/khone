@@ -6,6 +6,17 @@ import type { VFile } from 'vfile';
 
 type Node = Root | RootContent;
 type LinkNode = Definition | Link;
+type HtmlNode = Extract<RootContent, { type: 'html' }>;
+type MdxJsxAttribute = {
+  type: 'mdxJsxAttribute';
+  name: string;
+  value?: string | null | unknown;
+};
+type MdxJsxNode = {
+  type: string;
+  attributes?: MdxJsxAttribute[];
+  children?: Node[];
+};
 
 const docsRoot = realpathSync(path.resolve(process.cwd(), 'content/docs'));
 const staticMarkdownPaths = new Set(['assets', 'benchmark-results-public']);
@@ -32,14 +43,48 @@ function sourcePathForFile(file: VFile) {
   return relativePath.startsWith('..') ? undefined : relativePath;
 }
 
+function routePathForSourcePath(sourcePath: string) {
+  const withoutExtension = sourcePath.replace(/\.mdx?$/, '');
+
+  return withoutExtension.endsWith('/index')
+    ? withoutExtension.slice(0, -'/index'.length)
+    : withoutExtension;
+}
+
+function routeForStaticPath(pathname: string, suffix: string, sourcePath: string) {
+  const targetSourcePath = path.posix.normalize(
+    path.posix.join(path.posix.dirname(sourcePath), pathname),
+  );
+  if (targetSourcePath.startsWith('..')) return undefined;
+
+  const [firstSegment] = targetSourcePath.split('/');
+  if (!staticMarkdownPaths.has(firstSegment)) return undefined;
+
+  const sourceRoutePath = routePathForSourcePath(sourcePath);
+  const fromRouteDir = path.posix.join('/docs', sourceRoutePath, '/');
+  const targetRoutePath = path.posix.join('/docs', targetSourcePath);
+  const relativePath = path.posix.relative(fromRouteDir, targetRoutePath);
+
+  return `${relativePath || '.'}${suffix}`;
+}
+
+function routeForStaticHref(href: string, sourcePath: string) {
+  if (isSpecialHref(href)) return href;
+
+  const { pathname, suffix } = splitHref(href);
+  if (!pathname) return href;
+
+  return routeForStaticPath(pathname, suffix, sourcePath) ?? href;
+}
+
 function routeForMarkdownLink(href: string, sourcePath: string) {
   if (isSpecialHref(href)) return href;
 
   const { pathname, suffix } = splitHref(href);
-  if (!pathname.match(/\.mdx?$/)) return href;
+  const staticHref = routeForStaticPath(pathname, suffix, sourcePath);
+  if (staticHref) return staticHref;
 
-  const segments = pathname.split('/').filter(Boolean);
-  if (segments.some((segment) => staticMarkdownPaths.has(segment))) return href;
+  if (!pathname.match(/\.mdx?$/)) return href;
 
   const targetSourcePath = path.posix.normalize(
     path.posix.join(path.posix.dirname(sourcePath), pathname),
@@ -54,11 +99,61 @@ function routeForMarkdownLink(href: string, sourcePath: string) {
   return `/docs/${routePath ? `${routePath}/` : ''}${suffix}`;
 }
 
+function routeSrcset(value: string, sourcePath: string) {
+  return value
+    .split(',')
+    .map((candidate) => {
+      const [url, ...descriptors] = candidate.trim().split(/\s+/);
+      if (!url) return candidate;
+
+      return [routeForStaticHref(url, sourcePath), ...descriptors].join(' ');
+    })
+    .join(', ');
+}
+
+function routeStaticHtmlAttributes(value: string, sourcePath: string) {
+  return value.replace(/\b(href|src|srcset)="([^"]+)"/g, (match, attribute, rawValue) => {
+    const nextValue = attribute === 'srcset'
+      ? routeSrcset(rawValue, sourcePath)
+      : routeForStaticHref(rawValue, sourcePath);
+
+    return `${attribute}="${nextValue}"`;
+  });
+}
+
+function routeMdxJsxAttribute(attribute: MdxJsxAttribute, sourcePath: string) {
+  if (typeof attribute.value !== 'string') return;
+
+  if (attribute.name === 'srcSet') {
+    attribute.value = routeSrcset(attribute.value, sourcePath);
+  } else if (attribute.name === 'href' || attribute.name === 'src') {
+    attribute.value = routeForStaticHref(attribute.value, sourcePath);
+  }
+}
+
 function visitLinks(node: Node, visitor: (node: LinkNode) => void) {
   if (node.type === 'link' || node.type === 'definition') visitor(node as LinkNode);
 
   if ('children' in node && Array.isArray(node.children)) {
     for (const child of node.children) visitLinks(child as Node, visitor);
+  }
+}
+
+function visitHtml(node: Node, visitor: (node: HtmlNode) => void) {
+  if (node.type === 'html') visitor(node as HtmlNode);
+
+  if ('children' in node && Array.isArray(node.children)) {
+    for (const child of node.children) visitHtml(child as Node, visitor);
+  }
+}
+
+function visitMdxJsx(node: Node, visitor: (node: MdxJsxNode) => void) {
+  if (node.type === 'mdxJsxFlowElement' || node.type === 'mdxJsxTextElement') {
+    visitor(node as MdxJsxNode);
+  }
+
+  if ('children' in node && Array.isArray(node.children)) {
+    for (const child of node.children) visitMdxJsx(child as Node, visitor);
   }
 }
 
@@ -69,6 +164,16 @@ export function remarkDocLinks(): Transformer<Root> {
 
     visitLinks(tree, (node) => {
       node.url = routeForMarkdownLink(node.url, sourcePath);
+    });
+
+    visitHtml(tree, (node) => {
+      node.value = routeStaticHtmlAttributes(node.value, sourcePath);
+    });
+
+    visitMdxJsx(tree, (node) => {
+      node.attributes?.forEach((attribute) => {
+        routeMdxJsxAttribute(attribute, sourcePath);
+      });
     });
   };
 }

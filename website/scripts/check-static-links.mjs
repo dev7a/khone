@@ -90,12 +90,12 @@ for (const file of htmlFiles) {
   const route = routeFor(file);
 
   for (const attribute of ['href', 'src']) {
-    for (const match of html.matchAll(new RegExp(`${attribute}="([^"]+)"`, 'g'))) {
+    for (const match of html.matchAll(new RegExp(`${attribute}="([^"]+)"`, 'gi'))) {
       checkUrl(file, route, attribute, match[1]);
     }
   }
 
-  for (const match of html.matchAll(/srcset="([^"]+)"/g)) {
+  for (const match of html.matchAll(/srcset="([^"]+)"/gi)) {
     for (const candidate of match[1].split(',')) {
       checkUrl(file, route, 'srcset', candidate.trim().split(/\s+/)[0]);
     }

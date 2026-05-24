@@ -63,4 +63,4 @@ It is also a poor fit when:
 - Try the [Quickstart](quickstart.md) when the fit looks plausible.
 - Read the [LMI deployment model](../deploy/lmi-deployment-model.md) before designing a production
   stack.
-- Review [Benchmark results](../benchmarks/results.md) for the public I/O-bound snapshot.
+- Review [Benchmark results](../benchmarks/results.mdx) for the public I/O-bound snapshot.
