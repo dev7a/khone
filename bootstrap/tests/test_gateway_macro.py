@@ -66,7 +66,7 @@ class GatewayMacroTests(unittest.TestCase):
             )
         }
         os.environ["KHONE_GATEWAY_CODE_S3_BUCKET"] = "khone-artifacts"
-        os.environ["KHONE_GATEWAY_CODE_S3_KEY"] = "khone/releases/0.1.0/gateway.zip"
+        os.environ["KHONE_GATEWAY_CODE_S3_KEY"] = "khone/releases/0.1.0/gateway/bootstrap.zip"
         os.environ.pop("KHONE_GATEWAY_CODE_S3_OBJECT_VERSION", None)
 
     def tearDown(self) -> None:
@@ -122,7 +122,7 @@ class GatewayMacroTests(unittest.TestCase):
         function_props = resources["Gateway"]["Properties"]
         self.assertEqual(function_props["Code"], {
             "S3Bucket": "khone-artifacts",
-            "S3Key": "khone/releases/0.1.0/gateway.zip",
+            "S3Key": "khone/releases/0.1.0/gateway/bootstrap.zip",
         })
         self.assertEqual(function_props["FunctionName"], {"Fn::Sub": "${AWS::StackName}-gateway"})
         self.assertEqual(function_props["Description"], "Khone gateway")
@@ -259,7 +259,7 @@ class GatewayMacroTests(unittest.TestCase):
             out["fragment"]["Resources"]["Gateway"]["Properties"]["Code"],
             {
                 "S3Bucket": "khone-artifacts",
-                "S3Key": "khone/releases/0.1.0/gateway.zip",
+                "S3Key": "khone/releases/0.1.0/gateway/bootstrap.zip",
                 "S3ObjectVersion": "object-version",
             },
         )
