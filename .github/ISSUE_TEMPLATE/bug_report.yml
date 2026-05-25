@@ -1,0 +1,99 @@
+name: Bug report
+description: Report a reproducible problem in Khone.
+title: "bug: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping improve Khone. Please submit only reports you have reproduced or can substantiate with concrete evidence.
+
+        This project does not accept unsolicited external pull requests. If the issue is accepted, a maintainer will create the implementation PR and may invite you to review or test it.
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Affected area
+      options:
+        - Gateway
+        - Bootstrap or SAM macro
+        - Lambda adapter
+        - Examples
+        - Benchmark tooling
+        - Documentation
+        - Website
+        - Other or not sure
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Khone version or commit
+      description: Include the release version, branch, or commit SHA you tested.
+      placeholder: "0.1.0, main@abc1234, or a commit SHA"
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction steps
+      description: List the shortest sequence that reproduces the problem.
+      placeholder: |
+        1. Deploy ...
+        2. Send ...
+        3. Observe ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: What did you expect to happen?
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: What happened instead?
+    validations:
+      required: true
+
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence
+      description: Include logs, stack traces, response bodies, configuration snippets, or a minimal example. Remove secrets and private infrastructure details.
+      render: text
+    validations:
+      required: false
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Include relevant AWS services, region, runtime, deployment mode, local tool versions, and dependency versions.
+      placeholder: |
+        AWS region:
+        Runtime:
+        Deployment mode:
+        SAM CLI:
+        cargo-lambda:
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: quality
+    attributes:
+      label: Report quality
+      options:
+        - label: I have reproduced this issue or provided concrete evidence for it.
+          required: true
+        - label: I have removed secrets, credentials, and private infrastructure details.
+          required: true
+        - label: I understand this repository does not accept unsolicited external PRs.
+          required: true
+

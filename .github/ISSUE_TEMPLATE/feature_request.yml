@@ -1,0 +1,85 @@
+name: Feature request
+description: Request a feature tied to a concrete use case.
+title: "feature: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for sharing a use case. Please focus on the problem, desired outcome, and constraints.
+
+        This project does not accept unsolicited external pull requests. If the request is accepted, a maintainer will create the implementation PR and may invite you to review or test it.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or use case
+      description: What are you trying to do, and why does the current project not cover it?
+      placeholder: "I want to..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: desired-outcome
+    attributes:
+      label: Desired outcome
+      description: Describe the user-visible or operator-visible behavior you want.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Relevant area
+      options:
+        - Gateway behavior
+        - Batching policy
+        - Lambda adapter
+        - Bootstrap or SAM deployment
+        - Observability
+        - Benchmarking
+        - Documentation
+        - Other or not sure
+    validations:
+      required: true
+
+  - type: textarea
+    id: constraints
+    attributes:
+      label: Constraints and tradeoffs
+      description: Include latency, cost, reliability, compatibility, AWS service limits, deployment, or operational constraints.
+      placeholder: |
+        Latency budget:
+        Cost sensitivity:
+        Deployment constraints:
+        Compatibility requirements:
+    validations:
+      required: false
+
+  - type: textarea
+    id: workaround
+    attributes:
+      label: Current workaround
+      description: What are you doing today, if anything?
+    validations:
+      required: false
+
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Supporting context
+      description: Link to docs, examples, benchmark data, logs, diagrams, or related prior art when useful. Remove secrets and private details.
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: quality
+    attributes:
+      label: Request quality
+      options:
+        - label: This request is tied to a real use case or concrete workflow.
+          required: true
+        - label: I have described the problem and desired outcome, not only an implementation idea.
+          required: true
+        - label: I understand this repository does not accept unsolicited external PRs.
+          required: true
+
