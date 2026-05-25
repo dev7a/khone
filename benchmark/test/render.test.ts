@@ -205,3 +205,31 @@ test('latency distribution title includes run configuration context', async () =
   assert.match(title.subtext ?? '', /Backend delay: 80\+40 ms, 48 pts, 7000 ms timeout/);
   assert.match(title.subtext ?? '', /Gateway LMI: 2048 MB gateway, 1-4 envs, 64 conc\/env, 2 GiB\/vCPU/);
 });
+
+test('latency distribution title uses the chart sans font stack', async () => {
+  const records = await loadK6Csv(fixtureCsv);
+  const metrics = deriveMetrics({
+    records,
+    endpointOrder: ['standard', 'adaptive'],
+    stages: [{ duration: '3s', target: 2 }],
+    executor: 'ramping-arrival-rate',
+    mode: 'per_endpoint',
+    stackName: 'test-stack',
+    maxDelayMs: 0,
+  });
+
+  const specs = buildEChartsRenderSpecs(metrics, 'light');
+  const latencySpec = specs.find((spec) => spec.filename === RUN_CHART_FILENAMES.latencyDistribution);
+  assert.ok(latencySpec, 'latency distribution chart spec should exist');
+
+  const option = latencySpec.option as Record<string, unknown>;
+  const textStyle = option.textStyle as { fontFamily?: string };
+  const title = option.title as {
+    textStyle?: { fontFamily?: string };
+    subtextStyle?: { fontFamily?: string };
+  };
+
+  assert.equal(textStyle.fontFamily, 'Arial, Helvetica, sans-serif');
+  assert.equal(title.textStyle?.fontFamily, textStyle.fontFamily);
+  assert.equal(title.subtextStyle?.fontFamily, textStyle.fontFamily);
+});
