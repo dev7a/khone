@@ -1,6 +1,6 @@
 ---
 title: Bootstrap macro
-description: Khone bootstrap resources, gateway config publisher behavior, custom resource attributes, and exported outputs.
+description: Khone bootstrap resources, gateway macro behavior, generated resources, and exported outputs.
 ---
 
 # Bootstrap macro
@@ -11,17 +11,26 @@ The bootstrap stack installs the per-account/per-region resources that applicati
 - `Custom::KhoneConfigPublisher` Lambda (writes the manifest).
 - `KhoneGateway` CloudFormation macro (expands `Khone::Gateway::Service`).
 - Shared Mode A runtime API proxy layers (arm64 and amd64).
+- Versioned gateway Lambda artifact settings used by the macro.
 
 ## `Khone::Gateway::Service`
 
-`Khone::Gateway::Service` is a config-artifact resource. The macro replaces it with a
-`Custom::KhoneConfigPublisher` using the same logical ID, so callers can reference the original
-logical ID (for example `!GetAtt GatewayConfig.ConfigS3Uri`).
+`Khone::Gateway::Service` is the deployable gateway resource. The macro replaces the original
+logical ID with a native `AWS::Lambda::Function`, then generates the config publisher, execution
+role, Function URL, and optional log group around it.
 
 ```yaml
-GatewayConfig:
+GatewayService:
   Type: Khone::Gateway::Service
   Properties:
+    CapacityProviderArn: !Ref GatewayCapacityProviderArn
+    FunctionName: !Sub "${AWS::StackName}-gateway"
+    MemorySize: 2048
+    Timeout: 30
+    ExecutionEnvironmentMemoryGiBPerVCpu: 2.0
+    PerExecutionEnvironmentMaxConcurrency: 64
+    MinExecutionEnvironments: 1
+    MaxExecutionEnvironments: 4
     ConfigPrefix: !Sub "khone/${AWS::StackName}/gateway/"
     GatewayConfig:
       DefaultTimeoutMs: 2000
@@ -34,14 +43,41 @@ Supported properties:
 
 | Property | Required | Description |
 | --- | --- | --- |
+| `CapacityProviderArn` | Yes | Existing Lambda Managed Instances capacity provider ARN. |
 | `GatewayConfig` | Yes | Runtime settings excluding `Spec`. Must be an object. |
 | `Spec` | Yes | OpenAPI-ish route document embedded into the manifest. Must be an object. |
 | `ConfigPrefix` | No | S3 key prefix. Defaults to `khone/${AWS::StackName}/<LogicalId>/`. |
+| `FunctionName` | No | Gateway Lambda function name. |
+| `Description` | No | Gateway Lambda description. |
+| `MemorySize` | No | Gateway Lambda memory in MB. Defaults to `2048`. |
+| `Timeout` | No | Gateway Lambda timeout in seconds. Defaults to `30`. |
+| `ExecutionEnvironmentMemoryGiBPerVCpu` | No | LMI execution environment memory per vCPU. Defaults to `2.0`. |
+| `PerExecutionEnvironmentMaxConcurrency` | No | LMI max concurrency per execution environment. Defaults to `64`. |
+| `MinExecutionEnvironments` | No | LMI minimum execution environments. Defaults to `1`. |
+| `MaxExecutionEnvironments` | No | LMI maximum execution environments. Defaults to `4`. |
+| `FunctionUrlAuthType` | No | Function URL auth type, `NONE` or `AWS_IAM`. Defaults to `NONE`. |
+| `Environment` | No | Gateway environment variables as a map of strings or intrinsics. `KHONE_CONFIG_URI` is reserved. |
+| `TracingConfig` | No | Native Lambda tracing config. |
+| `LoggingConfig` | No | Native Lambda logging config. |
+| `LogRetentionInDays` | No | Creates a generated CloudWatch log group with the requested retention. |
 
 The macro additionally preserves `Condition`, `DeletionPolicy`, `DependsOn`, `Metadata`, and
 `UpdateReplacePolicy` from the original resource fragment.
 
-Returned attributes (via `!GetAtt`):
+The original logical ID becomes the gateway Lambda. `!Ref GatewayService` returns the function name,
+and `!GetAtt GatewayService.Arn` returns the gateway Lambda ARN.
+
+Generated logical IDs:
+
+| Logical ID | Resource |
+| --- | --- |
+| `<Gateway>KhoneConfigPublisher` | `Custom::KhoneConfigPublisher` |
+| `<Gateway>KhoneExecutionRole` | `AWS::IAM::Role` |
+| `<Gateway>KhoneFunctionUrl` | `AWS::Lambda::Url` |
+| `<Gateway>KhoneFunctionUrlPermission` | `AWS::Lambda::Permission` when `FunctionUrlAuthType: NONE` |
+| `<Gateway>KhoneLogGroup` | `AWS::Logs::LogGroup` when `LogRetentionInDays` is set |
+
+Config publisher attributes are available from `<Gateway>KhoneConfigPublisher`:
 
 | Attribute | Description |
 | --- | --- |
@@ -53,8 +89,9 @@ Returned attributes (via `!GetAtt`):
 
 ## Deployment ownership
 
-`Khone::Gateway::Service` only publishes configuration. Define gateway compute, IAM, environment
-variables, observability, and scaling directly on the explicit SAM gateway function.
+`Khone::Gateway::Service` owns gateway compute, IAM, environment variables, observability, Function
+URL, and scaling. Capacity providers remain external: pass the existing capacity provider ARN into
+`CapacityProviderArn`.
 
 ## Bootstrap outputs
 

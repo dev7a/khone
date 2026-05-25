@@ -175,9 +175,9 @@ export default function HomePage() {
                 </h2>
               </div>
               <p className="lede">
-                The <code>KhoneGateway</code> macro publishes the gateway config and spec to S3. Your
-                stack defines the gateway as an explicit <code>AWS::Serverless::Function</code> backed
-                by an LMI capacity provider.
+                The <code>KhoneGateway</code> macro creates the gateway Lambda, Function URL, execution
+                role, and config artifact. Your stack supplies target functions and an existing LMI
+                capacity provider.
               </p>
             </div>
 
@@ -193,9 +193,14 @@ export default function HomePage() {
   - KhoneGateway
 
 Resources:
-  GatewayConfig:
+  GatewayService:
     Type: Khone::Gateway::Service
     Properties:
+      CapacityProviderArn: !Ref GatewayCapacityProviderArn
+      MemorySize: 2048
+      Timeout: 30
+      ExecutionEnvironmentMemoryGiBPerVCpu: 2.0
+      PerExecutionEnvironmentMaxConcurrency: 64
       ConfigPrefix: !Sub "khone/\${AWS::StackName}/gateway/"
       GatewayConfig:
         DefaultTimeoutMs: 2000
@@ -208,25 +213,7 @@ Resources:
               x-khone:
                 maxBatchSize: 16
                 maxWaitMs: 35
-                invokeMode: response_stream
-
-  GatewayFunction:
-    Type: AWS::Serverless::Function
-    Metadata:
-      BuildMethod: rust-cargolambda
-    Properties:
-      CodeUri: ../../gateway
-      Handler: bootstrap
-      Runtime: provided.al2023
-      Architectures: [arm64]
-      CapacityProviderConfig:
-        Arn: !Ref GatewayCapacityProviderArn
-      Environment:
-        Variables:
-          KHONE_CONFIG_URI: !GetAtt GatewayConfig.ConfigS3Uri
-      FunctionUrlConfig:
-        AuthType: NONE
-        InvokeMode: RESPONSE_STREAM`}</code>
+                invokeMode: response_stream`}</code>
                 </pre>
               </div>
 

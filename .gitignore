@@ -30,6 +30,8 @@ __pycache__/
 
 # AWS SAM
 .aws-sam/
+/bootstrap/template.release.yaml
+/release/
 
 # Benchmark output
 benchmark-results/

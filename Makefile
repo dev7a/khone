@@ -17,6 +17,9 @@ SAM_DEPLOY_FLAGS ?= --resolve-s3 --capabilities CAPABILITY_IAM --no-confirm-chan
 BOOTSTRAP_STACK_NAME ?= khone-bootstrap
 BOOTSTRAP_TEMPLATE ?= bootstrap/template.yaml
 BOOTSTRAP_BUCKET ?=
+GATEWAY_CODE_S3_BUCKET ?=
+GATEWAY_CODE_S3_KEY ?=
+GATEWAY_CODE_S3_OBJECT_VERSION ?=
 
 .PHONY: help
 help:
@@ -60,7 +63,10 @@ print-vars: check
 			"EXAMPLE_TEMPLATE_DIR=$(EXAMPLE_TEMPLATE_DIR)" \
 			"BOOTSTRAP_STACK_NAME=$(BOOTSTRAP_STACK_NAME)" \
 			"BOOTSTRAP_TEMPLATE=$(BOOTSTRAP_TEMPLATE)" \
-			"BOOTSTRAP_BUCKET=$(BOOTSTRAP_BUCKET)"
+			"BOOTSTRAP_BUCKET=$(BOOTSTRAP_BUCKET)" \
+			"GATEWAY_CODE_S3_BUCKET=$(GATEWAY_CODE_S3_BUCKET)" \
+			"GATEWAY_CODE_S3_KEY=$(GATEWAY_CODE_S3_KEY)" \
+			"GATEWAY_CODE_S3_OBJECT_VERSION=$(GATEWAY_CODE_S3_OBJECT_VERSION)"
 
 .PHONY: check-example-template
 check-example-template:
@@ -115,6 +121,9 @@ bootstrap-deploy: check bootstrap-build
 	export AWS_REGION="$(AWS_REGION)" AWS_DEFAULT_REGION="$(AWS_REGION)"; \
 		params=(); \
 		if [[ -n "$(BOOTSTRAP_BUCKET)" ]]; then params+=("UseExistingBucket=$(BOOTSTRAP_BUCKET)"); fi; \
+		if [[ -n "$(GATEWAY_CODE_S3_BUCKET)" ]]; then params+=("GatewayCodeS3Bucket=$(GATEWAY_CODE_S3_BUCKET)"); fi; \
+		if [[ -n "$(GATEWAY_CODE_S3_KEY)" ]]; then params+=("GatewayCodeS3Key=$(GATEWAY_CODE_S3_KEY)"); fi; \
+		if [[ -n "$(GATEWAY_CODE_S3_OBJECT_VERSION)" ]]; then params+=("GatewayCodeS3ObjectVersion=$(GATEWAY_CODE_S3_OBJECT_VERSION)"); fi; \
 		deploy_args=( \
 			--stack-name "$(BOOTSTRAP_STACK_NAME)" \
 			--template-file bootstrap/.aws-sam/build/template.yaml \

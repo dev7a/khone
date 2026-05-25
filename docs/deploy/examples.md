@@ -18,7 +18,7 @@ Lambda functions needed to show a specific integration mode or language.
 
 ## Prerequisites
 
-- Bootstrap stack deployed with `make bootstrap-deploy`.
+- Bootstrap stack deployed from the SAR release, or from source with gateway artifact parameters.
 - Existing LMI capacity provider ARN.
 - SAM CLI, Rust, `cargo-lambda`, and `SAM_CLI_BETA_RUST_CARGO_LAMBDA=1`.
 
@@ -36,8 +36,9 @@ make examples-sam-deploy \
   GATEWAY_CAPACITY_PROVIDER_ARN=arn:aws:lambda:...
 ```
 
-Layer proxy templates also need the bootstrap layer export. The Makefile resolves
-`KhoneLayerArm64Arn` automatically when a template declares that parameter.
+The Makefile resolves bootstrap exports such as `KhoneLayerArm64Arn` automatically when a template
+declares the corresponding parameter. The gateway Lambda code comes from the macro's versioned
+artifact settings.
 
 Or run SAM directly from one template directory:
 

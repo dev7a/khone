@@ -338,7 +338,7 @@ function backendDelayLabel(metrics: MetricsBundle): string | null {
 }
 
 function gatewayLmiLabel(metrics: MetricsBundle): string | null {
-  const gateway = functionMetadata(metrics, ['GatewayFunction']);
+  const gateway = functionMetadata(metrics, ['GatewayService']);
   if (!gateway) {
     return null;
   }

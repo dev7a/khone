@@ -27,8 +27,8 @@ Gateway config is YAML with PascalCase top-level fields. The config publisher em
 Numeric fields and the boolean `profiling` may be written as numbers/booleans or as strings.
 
 The gateway reads the manifest at startup from the `KHONE_CONFIG_URI` environment variable
-(`s3://<bucket>/<key>`). The macro exposes the `ConfigS3Uri` attribute so that application templates
-can set it as `KHONE_CONFIG_URI` on the gateway function; see [Bootstrap macro](bootstrap-macro.md).
+(`s3://<bucket>/<key>`). The macro wires this environment variable automatically from the generated
+config publisher; see [Bootstrap macro](bootstrap-macro.md).
 
 ## Header forwarding
 
@@ -64,7 +64,9 @@ Spec:
 ```
 
 Supported HTTP methods are `get`, `post`, `put`, `delete`, `patch`, `head`, and `options`.
-`x-target-lambda` must be a Lambda function ARN. Paths use `{name}` placeholders.
+`x-target-lambda` must be a Lambda function ARN when written as a literal string. Intrinsic
+function objects such as `!GetAtt HelloFunction.Arn` are also supported. Paths use `{name}`
+placeholders.
 
 ## `x-khone`
 
