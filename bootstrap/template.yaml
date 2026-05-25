@@ -36,6 +36,14 @@ Parameters:
     Default: ""
     Description: Optional S3 object version for the versioned khone-gateway Lambda zip.
 
+Rules:
+  GatewayCodeArtifactRequired:
+    Assertions:
+      - Assert: !And
+          - !Not [!Equals [!Ref GatewayCodeS3Bucket, ""]]
+          - !Not [!Equals [!Ref GatewayCodeS3Key, ""]]
+        AssertDescription: GatewayCodeS3Bucket and GatewayCodeS3Key are required for the gateway macro to deploy gateway Lambdas.
+
 Conditions:
   CreateConfigBucket: !Equals [!Ref UseExistingBucket, ""]
 

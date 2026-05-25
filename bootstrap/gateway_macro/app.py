@@ -2,6 +2,7 @@ import copy
 import json
 import logging
 import os
+import re
 from typing import Any, Mapping, MutableMapping
 
 
@@ -62,7 +63,10 @@ PRESERVED_TOP_LEVEL_ATTRIBUTES = {
     "Metadata",
     "UpdateReplacePolicy",
 }
-GENERATED_RESOURCE_TOP_LEVEL_ATTRIBUTES = {"Condition"}
+GENERATED_RESOURCE_TOP_LEVEL_ATTRIBUTES = PRESERVED_TOP_LEVEL_ATTRIBUTES
+LAMBDA_FUNCTION_ARN_RE = re.compile(
+    r"^arn:[A-Za-z0-9-]+:lambda:[a-z0-9-]+:[0-9]{12}:function:[A-Za-z0-9-_]+(?::[A-Za-z0-9-_$]+)?$"
+)
 
 
 def _default_prefix_for(logical_id: str) -> Any:
@@ -249,6 +253,10 @@ def _is_positive_integer_literal(value: Any) -> bool:
     return False
 
 
+def _is_lambda_function_arn(value: str) -> bool:
+    return bool(LAMBDA_FUNCTION_ARN_RE.fullmatch(value))
+
+
 def _collect_target_lambda_arns(spec: Mapping[str, Any]) -> list[Any]:
     paths = spec.get("paths") or {}
     if not isinstance(paths, dict):
@@ -286,7 +294,7 @@ def _collect_target_lambda_arns(spec: Mapping[str, Any]) -> list[Any]:
                 raise ValueError(
                     f"{operation_path}.x-target-lambda must be a string or an intrinsic function object."
                 )
-            if isinstance(target, str) and not target.startswith("arn:"):
+            if isinstance(target, str) and not _is_lambda_function_arn(target):
                 raise ValueError(
                     f"{operation_path}.x-target-lambda must be a Lambda function ARN (got: {target!r})."
                 )
@@ -312,6 +320,19 @@ def _gateway_code() -> dict[str, Any]:
     if object_version:
         code["S3ObjectVersion"] = object_version
     return code
+
+
+def _gateway_log_group_arn(logical_id: str, function_name: Any, suffix: str = "") -> Any:
+    if function_name is None:
+        return _sub(
+            f"arn:${{AWS::Partition}}:logs:${{AWS::Region}}:${{AWS::AccountId}}:"
+            f"log-group:/aws/lambda/${{AWS::StackName}}-{logical_id}-*{suffix}"
+        )
+    return _sub(
+        f"arn:${{AWS::Partition}}:logs:${{AWS::Region}}:${{AWS::AccountId}}:"
+        f"log-group:/aws/lambda/${{FunctionName}}{suffix}",
+        {"FunctionName": function_name},
+    )
 
 
 def _expand_gateway_service(
@@ -441,18 +462,20 @@ def _expand_gateway_service(
         "arn:${AWS::Partition}:s3:::${Bucket}/${Prefix}*",
         {"Bucket": _import_value(EXPORT_CONFIG_BUCKET_NAME), "Prefix": config_prefix},
     )
+    log_group_arn = _gateway_log_group_arn(logical_id, function_name)
+    log_stream_arn = _gateway_log_group_arn(logical_id, function_name, ":*")
     policy_statements: list[dict[str, Any]] = [
         {
             "Sid": "CreateLogGroup",
             "Effect": "Allow",
             "Action": ["logs:CreateLogGroup"],
-            "Resource": _sub("arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:*"),
+            "Resource": log_group_arn,
         },
         {
             "Sid": "WriteLogs",
             "Effect": "Allow",
             "Action": ["logs:CreateLogStream", "logs:PutLogEvents"],
-            "Resource": _sub("arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/*:*"),
+            "Resource": log_stream_arn,
         },
         {
             "Sid": "ReadGatewayConfig",

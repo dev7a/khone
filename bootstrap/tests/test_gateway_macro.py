@@ -151,7 +151,29 @@ class GatewayMacroTests(unittest.TestCase):
         self.assertEqual(env["KHONE_CONFIG_URI"], {"Fn::GetAtt": ["GatewayKhoneConfigPublisher", "ConfigS3Uri"]})
 
         policy_doc = resources["GatewayKhoneExecutionRole"]["Properties"]["Policies"][0]["PolicyDocument"]
+        create_log_stmt = next(s for s in policy_doc["Statement"] if s["Sid"] == "CreateLogGroup")
+        write_log_stmt = next(s for s in policy_doc["Statement"] if s["Sid"] == "WriteLogs")
         invoke_stmt = next(s for s in policy_doc["Statement"] if s["Sid"] == "InvokeTargetLambdas")
+        self.assertEqual(
+            create_log_stmt["Resource"],
+            {
+                "Fn::Sub": [
+                    "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:"
+                    "log-group:/aws/lambda/${FunctionName}",
+                    {"FunctionName": {"Fn::Sub": "${AWS::StackName}-gateway"}},
+                ]
+            },
+        )
+        self.assertEqual(
+            write_log_stmt["Resource"],
+            {
+                "Fn::Sub": [
+                    "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:"
+                    "log-group:/aws/lambda/${FunctionName}:*",
+                    {"FunctionName": {"Fn::Sub": "${AWS::StackName}-gateway"}},
+                ]
+            },
+        )
         self.assertEqual(invoke_stmt["Action"], ["lambda:InvokeFunction", "lambda:InvokeWithResponseStream"])
         self.assertEqual(
             invoke_stmt["Resource"],
@@ -206,6 +228,17 @@ class GatewayMacroTests(unittest.TestCase):
             {"MinExecutionEnvironments": 1, "MaxExecutionEnvironments": 4},
         )
         self.assertEqual(function_props["Environment"]["Variables"]["RUST_LOG"], "info")
+        policy_doc = resources["GatewayKhoneExecutionRole"]["Properties"]["Policies"][0]["PolicyDocument"]
+        write_log_stmt = next(s for s in policy_doc["Statement"] if s["Sid"] == "WriteLogs")
+        self.assertEqual(
+            write_log_stmt["Resource"],
+            {
+                "Fn::Sub": (
+                    "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:"
+                    "log-group:/aws/lambda/${AWS::StackName}-Gateway-*:*"
+                )
+            },
+        )
 
     def test_includes_code_object_version_when_macro_env_is_set(self) -> None:
         os.environ["KHONE_GATEWAY_CODE_S3_OBJECT_VERSION"] = "object-version"
@@ -280,7 +313,12 @@ class GatewayMacroTests(unittest.TestCase):
             "GatewayKhoneFunctionUrl",
             "GatewayKhoneFunctionUrlPermission",
         ):
-            self.assertEqual(out["fragment"]["Resources"][generated_id]["Condition"], "UseGateway")
+            generated = out["fragment"]["Resources"][generated_id]
+            self.assertEqual(generated["Condition"], "UseGateway")
+            self.assertEqual(generated["DeletionPolicy"], "Retain")
+            self.assertEqual(generated["DependsOn"], ["ConfigBucket"])
+            self.assertEqual(generated["Metadata"], {"Comment": "kept"})
+            self.assertEqual(generated["UpdateReplacePolicy"], "Retain")
 
     def test_rejects_removed_app_runner_properties(self) -> None:
         out = app.handler(
@@ -392,6 +430,62 @@ class GatewayMacroTests(unittest.TestCase):
 
         self.assertEqual(out["status"], "failed")
         self.assertIn("Spec.paths['/hello'].get.x-target-lambda", out["errorMessage"])
+
+    def test_rejects_non_lambda_target_arn(self) -> None:
+        out = app.handler(
+            _event(
+                {
+                    "Gateway": {
+                        "Type": "Khone::Gateway::Service",
+                        "Properties": _gateway_props(
+                            Spec={
+                                "paths": {
+                                    "/hello": {
+                                        "get": {
+                                            "x-target-lambda": "arn:aws:s3:::not-a-lambda",
+                                            "x-khone": {"maxWaitMs": 1, "maxBatchSize": 1},
+                                        }
+                                    }
+                                }
+                            }
+                        ),
+                    }
+                }
+            ),
+            context=None,
+        )
+
+        self.assertEqual(out["status"], "failed")
+        self.assertIn("Spec.paths['/hello'].get.x-target-lambda", out["errorMessage"])
+
+    def test_accepts_qualified_lambda_target_arn(self) -> None:
+        out = app.handler(
+            _event(
+                {
+                    "Gateway": {
+                        "Type": "Khone::Gateway::Service",
+                        "Properties": _gateway_props(
+                            Spec={
+                                "paths": {
+                                    "/hello": {
+                                        "get": {
+                                            "x-target-lambda": (
+                                                "arn:aws-us-gov:lambda:us-gov-west-1:123456789012:"
+                                                "function:hello:prod"
+                                            ),
+                                            "x-khone": {"maxWaitMs": 1, "maxBatchSize": 1},
+                                        }
+                                    }
+                                }
+                            }
+                        ),
+                    }
+                }
+            ),
+            context=None,
+        )
+
+        self.assertEqual(out["status"], "success")
 
     def test_accepts_string_route_numeric_settings(self) -> None:
         out = app.handler(
