@@ -1,0 +1,71 @@
+name: Design feedback or use case
+description: Share feedback about APIs, deployment, docs, or operational behavior.
+title: "feedback: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this template for design feedback, unclear documentation, operational concerns, or real-world scenarios that should shape Khone.
+
+        This project does not accept unsolicited external pull requests. Maintainers will create implementation PRs for accepted changes.
+
+  - type: dropdown
+    id: topic
+    attributes:
+      label: Feedback topic
+      options:
+        - API or protocol design
+        - Deployment model
+        - Batching behavior
+        - Operational behavior
+        - Documentation clarity
+        - Example coverage
+        - Benchmark methodology
+        - Other or not sure
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: What were you reading, building, deploying, or evaluating when this came up?
+    validations:
+      required: true
+
+  - type: textarea
+    id: observation
+    attributes:
+      label: Observation or feedback
+      description: What seems confusing, risky, underspecified, or worth reconsidering?
+    validations:
+      required: true
+
+  - type: textarea
+    id: desired-change
+    attributes:
+      label: Desired change
+      description: What would make the project easier to understand, operate, or evaluate?
+    validations:
+      required: false
+
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Supporting context
+      description: Include links, examples, traces, diagrams, measurements, or snippets. Remove secrets and private details.
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: quality
+    attributes:
+      label: Feedback quality
+      options:
+        - label: This feedback is based on a concrete reading, deployment, evaluation, or use case.
+          required: true
+        - label: I have removed secrets, credentials, and private infrastructure details.
+          required: true
+        - label: I understand this repository does not accept unsolicited external PRs.
+          required: true
+

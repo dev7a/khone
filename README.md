@@ -107,6 +107,13 @@ Start with [the public docs](docs/index.md):
 - [Configuration reference](docs/reference/configuration.md)
 - [Benchmark results](docs/benchmarks/results.mdx)
 
+## Contributing
+
+Khone welcomes substantiated bug reports, feature requests, design feedback, and
+real-world use cases through GitHub issues. The project does not accept
+unsolicited external pull requests; see [Contributing](CONTRIBUTING.md) for the
+full policy and rationale.
+
 ## Repository Layout
 
 - `gateway/`: Rust Axum/Lambda gateway.
