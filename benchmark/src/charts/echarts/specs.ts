@@ -10,9 +10,9 @@ export interface EChartsRenderSpec {
   backgroundColor?: string;
 }
 
-const FONT_FAMILY = 'Avenir Next, Inter, Segoe UI, Helvetica Neue, Arial, sans-serif';
-const FONT_FAMILY_PUBLICATION = 'Source Sans 3, Avenir Next, Inter, Segoe UI, Helvetica Neue, Arial, sans-serif';
-const FONT_FAMILY_DARK = 'Avenir Next, Inter, Segoe UI, Helvetica Neue, Arial, sans-serif';
+const FONT_FAMILY = 'Arial, Helvetica, sans-serif';
+const FONT_FAMILY_PUBLICATION = FONT_FAMILY;
+const FONT_FAMILY_DARK = FONT_FAMILY;
 const DEFAULT_CANVAS_WIDTH = 1500;
 const TITLE_LEFT = 16;
 const TITLE_TOP = 10;
@@ -46,8 +46,18 @@ function standardTitle(text: string, subtext: string): Record<string, unknown> {
     subtext,
     left: TITLE_LEFT,
     top: TITLE_TOP,
-    textStyle: { fontSize: TITLE_FONT_SIZE, fontWeight: TITLE_WEIGHT, color: '#0f172a' },
-    subtextStyle: { fontSize: SUBTITLE_FONT_SIZE, color: '#475569', lineHeight: SUBTITLE_LINE_HEIGHT },
+    textStyle: {
+      fontFamily: FONT_FAMILY,
+      fontSize: TITLE_FONT_SIZE,
+      fontWeight: TITLE_WEIGHT,
+      color: '#0f172a',
+    },
+    subtextStyle: {
+      fontFamily: FONT_FAMILY,
+      fontSize: SUBTITLE_FONT_SIZE,
+      color: '#475569',
+      lineHeight: SUBTITLE_LINE_HEIGHT,
+    },
   };
 }
 
