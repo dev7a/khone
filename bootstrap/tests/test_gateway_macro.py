@@ -240,6 +240,39 @@ class GatewayMacroTests(unittest.TestCase):
             },
         )
 
+    def test_normalizes_literal_config_prefix_for_publisher_and_policy(self) -> None:
+        out = app.handler(
+            _event(
+                {
+                    "Gateway": {
+                        "Type": "Khone::Gateway::Service",
+                        "Properties": _gateway_props(ConfigPrefix=" /khone/demo "),
+                    }
+                }
+            ),
+            context=None,
+        )
+
+        self.assertEqual(out["status"], "success")
+        resources = out["fragment"]["Resources"]
+        self.assertEqual(resources["GatewayKhoneConfigPublisher"]["Properties"]["Prefix"], "khone/demo/")
+        policy_doc = resources["GatewayKhoneExecutionRole"]["Properties"]["Policies"][0]["PolicyDocument"]
+        read_stmt = next(s for s in policy_doc["Statement"] if s["Sid"] == "ReadGatewayConfig")
+        self.assertEqual(
+            read_stmt["Resource"],
+            [
+                {
+                    "Fn::Sub": [
+                        "arn:${AWS::Partition}:s3:::${Bucket}/${Prefix}*",
+                        {
+                            "Bucket": {"Fn::ImportValue": "KhoneConfigBucketName"},
+                            "Prefix": "khone/demo/",
+                        },
+                    ]
+                }
+            ],
+        )
+
     def test_includes_code_object_version_when_macro_env_is_set(self) -> None:
         os.environ["KHONE_GATEWAY_CODE_S3_OBJECT_VERSION"] = "object-version"
         out = app.handler(
@@ -386,6 +419,22 @@ class GatewayMacroTests(unittest.TestCase):
 
         self.assertEqual(out["status"], "failed")
         self.assertIn("cannot define KHONE_CONFIG_URI", out["errorMessage"])
+
+    def test_rejects_empty_function_name(self) -> None:
+        out = app.handler(
+            _event(
+                {
+                    "Gateway": {
+                        "Type": "Khone::Gateway::Service",
+                        "Properties": _gateway_props(FunctionName=""),
+                    }
+                }
+            ),
+            context=None,
+        )
+
+        self.assertEqual(out["status"], "failed")
+        self.assertIn("Gateway.Properties.FunctionName must not be empty", out["errorMessage"])
 
     def test_detects_generated_resource_collision(self) -> None:
         out = app.handler(

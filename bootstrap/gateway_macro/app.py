@@ -75,6 +75,19 @@ def _default_prefix_for(logical_id: str) -> Any:
     return {"Fn::Sub": f"khone/${{AWS::StackName}}/{logical_id}/"}
 
 
+def _normalize_prefix_literal(prefix: Any) -> Any:
+    if not isinstance(prefix, str):
+        return prefix
+    prefix = prefix.strip()
+    if not prefix:
+        return ""
+    if prefix.startswith("/"):
+        prefix = prefix[1:]
+    if prefix and not prefix.endswith("/"):
+        prefix += "/"
+    return prefix
+
+
 def _import_value(name: str) -> dict[str, Any]:
     return {"Fn::ImportValue": name}
 
@@ -169,6 +182,7 @@ def _validate_string_or_intrinsic(
     name: str,
     required: bool = False,
     default: Any = None,
+    allow_empty: bool = True,
 ) -> Any:
     value = props.get(name, default)
     if value is None:
@@ -182,6 +196,8 @@ def _validate_string_or_intrinsic(
             f"{logical_id}.Properties.{name} must be a string or intrinsic function object."
         )
     if isinstance(value, str) and required and not value:
+        raise ValueError(f"{logical_id}.Properties.{name} must not be empty.")
+    if isinstance(value, str) and not allow_empty and not value.strip():
         raise ValueError(f"{logical_id}.Properties.{name} must not be empty.")
     return value
 
@@ -369,7 +385,13 @@ def _expand_gateway_service(
         name="ConfigPrefix",
         default=_default_prefix_for(logical_id),
     )
-    function_name = _validate_string_or_intrinsic(logical_id=logical_id, props=props, name="FunctionName")
+    config_prefix = _normalize_prefix_literal(config_prefix)
+    function_name = _validate_string_or_intrinsic(
+        logical_id=logical_id,
+        props=props,
+        name="FunctionName",
+        allow_empty=False,
+    )
     description = _validate_string_or_intrinsic(logical_id=logical_id, props=props, name="Description")
     memory_size = _validate_int_or_intrinsic(
         logical_id=logical_id,
