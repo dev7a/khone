@@ -1,6 +1,6 @@
 ---
 title: LMI deployment model
-description: How Khone uses bootstrap resources, an explicit gateway function, a Function URL, and Lambda Managed Instances.
+description: How Khone uses bootstrap resources, a macro-owned gateway function, a Function URL, and Lambda Managed Instances.
 ---
 
 # LMI deployment model
@@ -27,21 +27,25 @@ Per-request responses -> gateway demux -> client
 ## Two stacks, different owners
 
 The bootstrap stack is shared per account and region. It installs the config bucket, config
-publisher, CloudFormation macro, and Mode A layer artifacts.
+publisher, CloudFormation macro, Mode A layer artifacts, and versioned gateway Lambda artifact
+settings.
 
-Application stacks own the actual gateway function and target functions. The `Khone::Gateway::Service`
-resource publishes a config artifact; it does not create the gateway compute.
+Application stacks own target functions and supply an existing LMI capacity provider ARN. The
+`Khone::Gateway::Service` resource creates the gateway Lambda, Function URL, execution role, and
+config artifact.
 
 ## Gateway function
 
-Application templates define the gateway as an explicit `AWS::Serverless::Function`:
+Application templates define the gateway with `Khone::Gateway::Service`. The macro emits a native
+`AWS::Lambda::Function` with:
 
 - `Runtime: provided.al2023`
 - `PackageType: Zip`
 - `Architectures: [arm64]`
-- `FunctionUrlConfig.InvokeMode: RESPONSE_STREAM`
-- `CapacityProviderConfig` attached to an existing LMI capacity provider
-- `KHONE_CONFIG_URI` set from `!GetAtt <GatewayConfig>.ConfigS3Uri`
+- `AWS::Lambda::Url` using `InvokeMode: RESPONSE_STREAM`
+- `CapacityProviderConfig.LambdaManagedInstancesCapacityProviderConfig`
+- `FunctionScalingConfig`
+- `KHONE_CONFIG_URI` set from the generated config publisher
 
 Use response streaming on the Function URL even when a route invokes buffered targets. The gateway
 needs the client-facing response stream for routes that do stream.

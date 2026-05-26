@@ -1,0 +1,410 @@
+name: publish-release
+
+on:
+  push:
+    tags:
+      - v*
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: Release tag to publish, for example v0.1.0 or v0.1.0-beta.1
+        required: true
+        type: string
+      share_scope:
+        description: Keep the SAR app private to the account or share it privately across the AWS Organization
+        required: false
+        default: account
+        type: choice
+        options:
+          - account
+          - organization
+
+permissions: {}
+
+env:
+  AWS_REGION: us-east-1
+  SAM_CLI_TELEMETRY: "0"
+  RELEASE_ROOT: release
+  AWS_SAM_CLI_VERSION: "1.157.1"
+  AWS_SAM_CLI_LINUX_ARM64_SHA256: "c32cc1f7f8b1d794eaf223489e12a60b44a58517b58c7248a8b21e95e25e844f"
+  CARGO_LAMBDA_VERSION: "1.9.1"
+  ZIG_VERSION: "0.14.1"
+  ZIG_AARCH64_LINUX_SHA256: "f7a654acc967864f7a050ddacfaa778c7504a0eca8d2b678839c21eea47c992b"
+
+jobs:
+  publish:
+    name: Build and publish the SAR bootstrap app
+    runs-on: ubuntu-24.04-arm
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Resolve release ref
+        id: release_ref
+        shell: bash
+        env:
+          RELEASE_TAG_INPUT: ${{ inputs.release_tag }}
+        run: |
+          set -euo pipefail
+
+          if [[ "$GITHUB_EVENT_NAME" == "push" ]]; then
+            tag="$GITHUB_REF_NAME"
+            checkout_ref="$GITHUB_SHA"
+          else
+            tag="$RELEASE_TAG_INPUT"
+            checkout_ref="refs/tags/$tag"
+          fi
+
+          if [[ ! "$tag" =~ ^v ]]; then
+            echo "::error::Release tags must start with 'v'."
+            exit 1
+          fi
+
+          {
+            echo "tag=$tag"
+            echo "version=${tag#v}"
+            echo "checkout_ref=$checkout_ref"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Check out the release ref
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+          ref: ${{ steps.release_ref.outputs.checkout_ref }}
+
+      - name: Validate release version metadata
+        shell: bash
+        env:
+          EXPECTED_VERSION: ${{ steps.release_ref.outputs.version }}
+        run: |
+          set -euo pipefail
+
+          semver_regex='^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-((0|[1-9][0-9]*|[0-9A-Za-z-][0-9A-Za-z-]*)(\.(0|[1-9][0-9]*|[0-9A-Za-z-][0-9A-Za-z-]*))*))?(\+([0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*))?$'
+          if [[ ! "$EXPECTED_VERSION" =~ $semver_regex ]]; then
+            echo "::error::Release tags must use vX.Y.Z or an allowed prerelease form such as vX.Y.Z-beta.1."
+            exit 1
+          fi
+
+          file_version="$(tr -d '[:space:]' < VERSION)"
+          if [[ "$file_version" != "$EXPECTED_VERSION" ]]; then
+            echo "::error::VERSION ($file_version) does not match release tag version $EXPECTED_VERSION."
+            exit 1
+          fi
+
+          sam_version_raw="$(
+            sed -nE 's/^[[:space:]]*SemanticVersion:[[:space:]]*(.+)$/\1/p' bootstrap/template.yaml | head -n1
+          )"
+          sam_version="$(scripts/normalize-yaml-scalar.sh "$sam_version_raw")"
+          if [[ "$sam_version" != "$EXPECTED_VERSION" ]]; then
+            echo "::error::bootstrap/template.yaml SemanticVersion ($sam_version) does not match release tag version $EXPECTED_VERSION."
+            exit 1
+          fi
+
+      - name: Validate sharing scope
+        shell: bash
+        env:
+          SHARE_SCOPE: ${{ inputs.share_scope || 'account' }}
+        run: |
+          set -euo pipefail
+
+          case "$SHARE_SCOPE" in
+            account|organization) ;;
+            *)
+              echo "::error::share_scope must be account or organization."
+              exit 1
+              ;;
+          esac
+
+      - name: Set up Rust
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          rustup toolchain install stable --profile minimal
+          rustup default stable
+          rustc --version
+          cargo --version
+
+      - name: Install cargo-lambda
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          cargo install cargo-lambda --locked --version "$CARGO_LAMBDA_VERSION" --force
+
+          installed_version="$(cargo lambda --version | awk '{print $2}')"
+          if [[ "$installed_version" != "$CARGO_LAMBDA_VERSION" ]]; then
+            echo "::error::Expected cargo-lambda $CARGO_LAMBDA_VERSION but found $installed_version."
+            exit 1
+          fi
+
+      - name: Install Zig
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          install_dir="$HOME/.local/zig/$ZIG_VERSION"
+          if [[ -x "$install_dir/zig" ]]; then
+            if installed_version="$(PATH="$install_dir:$PATH" zig version 2>/dev/null)"; then
+              if [[ "$installed_version" == "$ZIG_VERSION" ]]; then
+                echo "$install_dir" >> "$GITHUB_PATH"
+                exit 0
+              fi
+            fi
+          fi
+
+          archive="zig-aarch64-linux-${ZIG_VERSION}.tar.xz"
+          base_url="https://ziglang.org/download/${ZIG_VERSION}"
+          extract_dir="zig-aarch64-linux-${ZIG_VERSION}"
+          tmp_dir="$(mktemp -d)"
+          trap 'rm -rf "$tmp_dir"' EXIT
+
+          curl -fsSL --retry 5 --retry-all-errors --retry-delay 2 "$base_url/$archive" -o "$tmp_dir/$archive"
+          echo "$ZIG_AARCH64_LINUX_SHA256  $tmp_dir/$archive" | sha256sum -c -
+
+          tar -xJf "$tmp_dir/$archive" -C "$tmp_dir"
+          mkdir -p "$(dirname "$install_dir")"
+          rm -rf "$install_dir"
+          mv "$tmp_dir/$extract_dir" "$install_dir"
+          echo "$install_dir" >> "$GITHUB_PATH"
+
+          installed_version="$(PATH="$install_dir:$PATH" zig version)"
+          if [[ "$installed_version" != "$ZIG_VERSION" ]]; then
+            echo "::error::Expected zig $ZIG_VERSION but found $installed_version."
+            exit 1
+          fi
+
+      - name: Build the gateway Lambda zip
+        shell: bash
+        run: cargo lambda build --release --arm64 --output-format zip -p khone-gateway
+
+      - name: Install AWS SAM CLI
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          archive="aws-sam-cli-linux-arm64.zip"
+          base_url="https://github.com/aws/aws-sam-cli/releases/download/v${AWS_SAM_CLI_VERSION}"
+          install_dir="$HOME/.local/aws-sam-cli"
+          bin_dir="$HOME/.local/bin"
+          tmp_dir="$(mktemp -d)"
+          trap 'rm -rf "$tmp_dir"' EXIT
+
+          curl -fsSL --retry 5 --retry-all-errors --retry-delay 2 "$base_url/$archive" -o "$tmp_dir/$archive"
+          echo "$AWS_SAM_CLI_LINUX_ARM64_SHA256  $tmp_dir/$archive" | sha256sum -c -
+
+          unzip -q "$tmp_dir/$archive" -d "$tmp_dir"
+          rm -rf "$install_dir"
+          rm -f "$bin_dir/sam"
+          "$tmp_dir/install" --bin-dir "$bin_dir" --install-dir "$install_dir"
+
+          export PATH="$bin_dir:$PATH"
+          echo "$bin_dir" >> "$GITHUB_PATH"
+
+          installed_version="$(sam --version | sed -nE 's/^SAM CLI, version ([^[:space:]]+)$/\1/p')"
+          if [[ "$installed_version" != "$AWS_SAM_CLI_VERSION" ]]; then
+            echo "::error::Expected AWS SAM CLI $AWS_SAM_CLI_VERSION but found ${installed_version:-unknown}."
+            exit 1
+          fi
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@d979d5b3a71173a29b74b5b88418bfda9437d885 # v6.1.1
+        with:
+          aws-region: ${{ env.AWS_REGION }}
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+
+      - name: Upload versioned gateway artifact
+        id: gateway_artifact
+        shell: bash
+        env:
+          GATEWAY_ARTIFACT_BUCKET: ${{ secrets.GATEWAY_ARTIFACT_BUCKET }}
+          SAR_ARTIFACT_BUCKET: ${{ secrets.SAR_ARTIFACT_BUCKET }}
+          VERSION: ${{ steps.release_ref.outputs.version }}
+        run: |
+          set -euo pipefail
+
+          gateway_bucket="${GATEWAY_ARTIFACT_BUCKET:-$SAR_ARTIFACT_BUCKET}"
+          if [[ -z "$gateway_bucket" ]]; then
+            echo "::error::Set GATEWAY_ARTIFACT_BUCKET or SAR_ARTIFACT_BUCKET for release artifacts."
+            exit 1
+          fi
+
+          zip_path="target/lambda/khone-gateway/bootstrap.zip"
+          if [[ ! -f "$zip_path" ]]; then
+            echo "::error::Expected cargo-lambda output at $zip_path."
+            exit 1
+          fi
+
+          gateway_key="khone/releases/$VERSION/gateway/bootstrap.zip"
+          aws s3 cp "$zip_path" "s3://$gateway_bucket/$gateway_key" \
+            --metadata "khone-version=$VERSION"
+
+          object_version="$(
+            aws s3api head-object \
+              --bucket "$gateway_bucket" \
+              --key "$gateway_key" \
+              --query VersionId \
+              --output text
+          )"
+          case "$object_version" in
+            None|null) object_version="" ;;
+          esac
+
+          {
+            echo "bucket=$gateway_bucket"
+            echo "key=$gateway_key"
+            echo "object_version=$object_version"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Render release bootstrap template
+        id: release_template
+        shell: bash
+        env:
+          VERSION: ${{ steps.release_ref.outputs.version }}
+          GATEWAY_BUCKET: ${{ steps.gateway_artifact.outputs.bucket }}
+          GATEWAY_KEY: ${{ steps.gateway_artifact.outputs.key }}
+          GATEWAY_OBJECT_VERSION: ${{ steps.gateway_artifact.outputs.object_version }}
+        run: |
+          set -euo pipefail
+
+          output="bootstrap/template.release.yaml"
+          python3 scripts/render-bootstrap-release-template.py \
+            --template bootstrap/template.yaml \
+            --output "$output" \
+            --version "$VERSION" \
+            --gateway-code-s3-bucket "$GATEWAY_BUCKET" \
+            --gateway-code-s3-key "$GATEWAY_KEY" \
+            --gateway-code-s3-object-version "$GATEWAY_OBJECT_VERSION"
+
+          echo "path=$output" >> "$GITHUB_OUTPUT"
+
+      - name: Validate rendered SAR template
+        shell: bash
+        run: sam validate --template-file "${{ steps.release_template.outputs.path }}" --lint
+
+      - name: Build the SAR application
+        shell: bash
+        run: sam build --template-file "${{ steps.release_template.outputs.path }}" --beta-features
+
+      - name: Package the SAR application
+        id: packaged_template
+        shell: bash
+        env:
+          PACKAGE_BUCKET: ${{ secrets.SAR_ARTIFACT_BUCKET }}
+          VERSION: ${{ steps.release_ref.outputs.version }}
+        run: |
+          set -euo pipefail
+
+          if [[ -z "${PACKAGE_BUCKET:-}" ]]; then
+            echo "::error::SAR_ARTIFACT_BUCKET secret is required."
+            exit 1
+          fi
+
+          artifact_dir="$RELEASE_ROOT/$VERSION/bootstrap"
+          mkdir -p "$artifact_dir"
+          packaged_template="$artifact_dir/packaged.yaml"
+
+          sam package \
+            --template-file .aws-sam/build/template.yaml \
+            --s3-bucket "$PACKAGE_BUCKET" \
+            --s3-prefix "khone/releases/$VERSION/bootstrap" \
+            --output-template-file "$packaged_template"
+
+          packaged_semantic_version_raw="$(
+            sed -nE 's/^[[:space:]]*SemanticVersion:[[:space:]]*(.+)$/\1/p' "$packaged_template" | head -n1
+          )"
+          packaged_readme_url_raw="$(
+            sed -nE 's/^[[:space:]]*ReadmeUrl:[[:space:]]*(.+)$/\1/p' "$packaged_template" | head -n1
+          )"
+          packaged_semantic_version="$(scripts/normalize-yaml-scalar.sh "$packaged_semantic_version_raw")"
+          packaged_readme_url="$(scripts/normalize-yaml-scalar.sh "$packaged_readme_url_raw")"
+
+          if [[ "$packaged_semantic_version" != "$VERSION" ]]; then
+            echo "::error::Packaged template SemanticVersion '$packaged_semantic_version' does not match $VERSION."
+            exit 1
+          fi
+
+          if [[ ! "$packaged_readme_url" =~ ^s3:// ]]; then
+            echo "::error::Packaged template ReadmeUrl must be an s3:// URL, got '$packaged_readme_url'."
+            exit 1
+          fi
+
+          echo "path=$packaged_template" >> "$GITHUB_OUTPUT"
+
+      - name: Resolve SAR application identity
+        id: sar_application
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          app_name_raw="$(
+            sed -nE '/AWS::ServerlessRepo::Application:/,/^[^[:space:]]/ s/^[[:space:]]*Name:[[:space:]]*(.+)$/\1/p' bootstrap/template.yaml | head -n1
+          )"
+          app_name="$(scripts/normalize-yaml-scalar.sh "$app_name_raw")"
+          if [[ -z "$app_name" ]]; then
+            echo "::error::bootstrap/template.yaml is missing Metadata.AWS::ServerlessRepo::Application.Name."
+            exit 1
+          fi
+
+          account_id="$(aws sts get-caller-identity --query Account --output text)"
+          echo "application_id=arn:aws:serverlessrepo:${AWS_REGION}:${account_id}:applications/${app_name}" >> "$GITHUB_OUTPUT"
+
+      - name: Publish to Serverless Application Repository
+        shell: bash
+        env:
+          VERSION: ${{ steps.release_ref.outputs.version }}
+          TEMPLATE_PATH: ${{ steps.packaged_template.outputs.path }}
+        run: |
+          set -euo pipefail
+
+          sam publish \
+            --template "$TEMPLATE_PATH" \
+            --region "$AWS_REGION" \
+            --semantic-version "$VERSION"
+
+      - name: Share the published application with the AWS Organization
+        if: ${{ inputs.share_scope == 'organization' }}
+        shell: bash
+        env:
+          APPLICATION_ID: ${{ steps.sar_application.outputs.application_id }}
+        run: |
+          set -euo pipefail
+
+          org_id="$(
+            aws organizations describe-organization \
+              --query 'Organization.Id' \
+              --output text
+          )"
+          if [[ ! "$org_id" =~ ^o-[a-z0-9]{10,32}$ ]]; then
+            echo "::error::Discovered AWS Organization ID is invalid: '$org_id'."
+            exit 1
+          fi
+
+          existing_statements="$(
+            aws serverlessrepo get-application-policy \
+              --region "$AWS_REGION" \
+              --application-id "$APPLICATION_ID" \
+              --query 'Statements' \
+              --output json
+          )"
+          statements="$(
+            jq -cn --argjson existing "$existing_statements" --arg org_id "$org_id" '
+              ($existing // [])
+              | map(select(.StatementId != "share-org"))
+              + [
+                  {
+                    StatementId: "share-org",
+                    Actions: ["Deploy", "UnshareApplication"],
+                    PrincipalOrgIDs: [$org_id],
+                    Principals: ["*"]
+                  }
+                ]
+            '
+          )"
+
+          aws serverlessrepo put-application-policy \
+            --region "$AWS_REGION" \
+            --application-id "$APPLICATION_ID" \
+            --statements "$statements"

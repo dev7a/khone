@@ -1,12 +1,13 @@
 ---
 title: SAM gateway
-description: Define a Khone gateway config resource and gateway Lambda in your own SAM application stack.
+description: Define a Khone gateway resource in your SAM application stack.
 ---
 
 # SAM gateway
 
-Use this guide to deploy an application gateway rather than the demo or benchmark stack. The gateway
-function is owned by your SAM template; the macro only publishes the config artifact.
+Use this guide to deploy an application gateway rather than the demo or benchmark stack. The
+bootstrap stack installs the SAR-versioned macro and gateway artifact settings; your application
+stack supplies target functions and an existing LMI capacity provider ARN.
 
 ## 1. Add the transform
 
@@ -18,12 +19,23 @@ Transform:
 
 Deploy the bootstrap stack first so the macro and config publisher exist in the account and region.
 
-## 2. Publish the gateway config
+## 2. Define the gateway
 
 ```yaml
-GatewayConfig:
+GatewayService:
   Type: Khone::Gateway::Service
   Properties:
+    CapacityProviderArn: !Ref GatewayCapacityProviderArn
+    FunctionName: !Sub "${AWS::StackName}-gateway"
+    Description: Khone router running on Lambda Managed Instances.
+    MemorySize: 2048
+    Timeout: 30
+    ExecutionEnvironmentMemoryGiBPerVCpu: 2.0
+    PerExecutionEnvironmentMaxConcurrency: 64
+    MinExecutionEnvironments: 1
+    MaxExecutionEnvironments: 4
+    Environment:
+      RUST_LOG: info
     ConfigPrefix: !Sub "khone/${AWS::StackName}/gateway/"
     GatewayConfig:
       MaxInflightRequests: 4096
@@ -40,61 +52,36 @@ GatewayConfig:
               invokeMode: buffered
 ```
 
-See [Configuration](../reference/configuration.md) for field defaults and validation rules.
+The macro emits a native `AWS::Lambda::Function` using the same logical ID, plus:
 
-## 3. Define the gateway function
+- `GatewayServiceKhoneConfigPublisher`
+- `GatewayServiceKhoneExecutionRole`
+- `GatewayServiceKhoneFunctionUrl`
+- `GatewayServiceKhoneFunctionUrlPermission` when `FunctionUrlAuthType: NONE`
+- `GatewayServiceKhoneLogGroup` when `LogRetentionInDays` is set
 
-```yaml
-GatewayFunction:
-  Type: AWS::Serverless::Function
-  Metadata:
-    BuildMethod: rust-cargolambda
-  Properties:
-    CodeUri: ../../gateway
-    Handler: bootstrap
-    Runtime: provided.al2023
-    PackageType: Zip
-    Architectures: [arm64]
-    MemorySize: 2048
-    Timeout: 30
-    CapacityProviderConfig:
-      Arn: !Ref GatewayCapacityProviderArn
-      ExecutionEnvironmentMemoryGiBPerVCpu: 2.0
-      PerExecutionEnvironmentMaxConcurrency: 64
-    FunctionScalingConfig:
-      MinExecutionEnvironments: 1
-      MaxExecutionEnvironments: 4
-    FunctionUrlConfig:
-      AuthType: NONE
-      InvokeMode: RESPONSE_STREAM
-    Environment:
-      Variables:
-        KHONE_CONFIG_URI: !GetAtt GatewayConfig.ConfigS3Uri
-```
+See [Configuration](../reference/configuration.md) for gateway config fields and
+[Bootstrap macro](../reference/bootstrap-macro.md) for the complete resource contract.
 
-The function URL is the HTTP interface. Use `InvokeMode: RESPONSE_STREAM` even for buffered target
-routes so the gateway can stream client responses when routes need it.
+## 3. Permissions
 
-## 4. Grant gateway permissions
+The macro generates the gateway execution role. It grants:
 
-The gateway execution role needs:
+- CloudWatch Logs write permissions.
+- `s3:GetObject` for the generated config artifact prefix.
+- `lambda:InvokeFunction` and `lambda:InvokeWithResponseStream` for each
+  `x-target-lambda` found under `Spec.paths`.
 
-- `s3:GetObject` for the config artifact bucket and prefix.
-- `lambda:InvokeFunction` for buffered target routes.
-- `lambda:InvokeWithResponseStream` for response-streaming target routes.
-- CloudWatch Logs permissions for the gateway function.
+Use a literal Lambda ARN or an intrinsic object such as `!GetAtt HelloFunction.Arn` for
+`x-target-lambda`. Literal values must be Lambda ARNs.
 
-If the Function URL uses `AuthType: NONE`, place public access controls in front of it or in the
-target application protocol. The demo and benchmark stacks use unauthenticated URLs for simplicity.
-
-## 5. Output the function URL
+## 4. Output the function URL
 
 ```yaml
 Outputs:
   GatewayFunctionUrl:
-    Value: !GetAtt GatewayFunctionUrl.FunctionUrl
+    Value: !GetAtt GatewayServiceKhoneFunctionUrl.FunctionUrl
 ```
 
-SAM auto-creates a `<FunctionLogicalId>Url` resource when `FunctionUrlConfig` is set. The
-`!GetAtt GatewayFunctionUrl.FunctionUrl` reference works only because the function logical ID is
-exactly `GatewayFunction`. Adjust the resource name if you rename the function.
+`GatewayService` itself is the Lambda function after macro expansion. `!Ref GatewayService` returns
+the function name, and `!GetAtt GatewayService.Arn` returns the function ARN.

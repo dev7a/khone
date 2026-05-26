@@ -326,6 +326,27 @@ Resources:
   GatewayService:
     Type: Khone::Gateway::Service
     Properties:
+      CapacityProviderArn: !Ref GatewayCapacityProviderArn
+      FunctionName: !Sub '${AWS::StackName}-gateway'
+      Description: Khone benchmark router running on Lambda Managed Instances.
+      MemorySize: 2048
+      Timeout: 90
+      ExecutionEnvironmentMemoryGiBPerVCpu: 2.0
+      PerExecutionEnvironmentMaxConcurrency: 64
+      MinExecutionEnvironments: 4
+      MaxExecutionEnvironments: 4
+      Environment:
+        RUST_LOG: info
+        KHONE_DEBUG_RESPONSE_HEADERS: "1"
+        KHONE_EMF_METRICS: !If [EmfMetricsEnabledCondition, "1", !Ref AWS::NoValue]
+        KHONE_EMF_NAMESPACE: !If [EmfMetricsEnabledCondition, KhoneBenchmark, !Ref AWS::NoValue]
+        KHONE_EMF_HIGH_RES: !If [EmfMetricsEnabledCondition, "1", !Ref AWS::NoValue]
+        KHONE_OBSERVABILITY_VENDOR: !If [ObservabilityEnabledCondition, AWSXRAY, !Ref AWS::NoValue]
+        OTEL_PROPAGATORS: !If [ObservabilityEnabledCondition, "xray,tracecontext,baggage", !Ref AWS::NoValue]
+        OTEL_METRICS_EXPORTER: !If [ObservabilityEnabledCondition, "none", !Ref AWS::NoValue]
+        OTEL_SERVICE_NAME: !If [ObservabilityEnabledCondition, !Sub '${AWS::StackName}-gateway', !Ref AWS::NoValue]
+        OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: !If [ObservabilityEnabledCondition, !Ref OtelTracesEndpoint, !Ref AWS::NoValue]
+        OTEL_EXPORTER_OTLP_TRACES_PROTOCOL: !If [ObservabilityEnabledCondition, !Ref OtelTracesProtocol, !Ref AWS::NoValue]
       ConfigPrefix: !Sub 'khone/${AWS::StackName}/gateway/'
       GatewayConfig:
         DefaultTimeoutMs: 2000
@@ -376,65 +397,6 @@ Resources:
                   smoothingSamples: 10
                   warmupProbes: 3
 
-  GatewayFunction:
-    Type: AWS::Serverless::Function
-    Metadata:
-      BuildMethod: rust-cargolambda
-    Properties:
-      CodeUri: ../../gateway
-      Handler: bootstrap
-      Runtime: provided.al2023
-      PackageType: Zip
-      FunctionName: !Sub '${AWS::StackName}-gateway'
-      Description: Khone benchmark router running on Lambda Managed Instances.
-      Architectures:
-        - arm64
-      MemorySize: 2048
-      Timeout: 90
-      CapacityProviderConfig:
-        Arn: !Ref GatewayCapacityProviderArn
-        ExecutionEnvironmentMemoryGiBPerVCpu: 2.0
-        PerExecutionEnvironmentMaxConcurrency: 64
-      FunctionScalingConfig:
-        MinExecutionEnvironments: 4
-        MaxExecutionEnvironments: 4
-      FunctionUrlConfig:
-        AuthType: NONE
-        InvokeMode: RESPONSE_STREAM
-      Environment:
-        Variables:
-          RUST_LOG: info
-          KHONE_CONFIG_URI: !GetAtt GatewayService.ConfigS3Uri
-          KHONE_DEBUG_RESPONSE_HEADERS: "1"
-          KHONE_EMF_METRICS: !If [EmfMetricsEnabledCondition, "1", !Ref AWS::NoValue]
-          KHONE_EMF_NAMESPACE: !If [EmfMetricsEnabledCondition, KhoneBenchmark, !Ref AWS::NoValue]
-          KHONE_EMF_HIGH_RES: !If [EmfMetricsEnabledCondition, "1", !Ref AWS::NoValue]
-          KHONE_OBSERVABILITY_VENDOR: !If [ObservabilityEnabledCondition, AWSXRAY, !Ref AWS::NoValue]
-          OTEL_PROPAGATORS: !If [ObservabilityEnabledCondition, "xray,tracecontext,baggage", !Ref AWS::NoValue]
-          OTEL_METRICS_EXPORTER: !If [ObservabilityEnabledCondition, "none", !Ref AWS::NoValue]
-          OTEL_SERVICE_NAME: !If [ObservabilityEnabledCondition, !Sub '${AWS::StackName}-gateway', !Ref AWS::NoValue]
-          OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: !If [ObservabilityEnabledCondition, !Ref OtelTracesEndpoint, !Ref AWS::NoValue]
-          OTEL_EXPORTER_OTLP_TRACES_PROTOCOL: !If [ObservabilityEnabledCondition, !Ref OtelTracesProtocol, !Ref AWS::NoValue]
-      Policies:
-        - AWSLambdaBasicExecutionRole
-        - Statement:
-            - Sid: ReadGatewayConfig
-              Effect: Allow
-              Action: s3:GetObject
-              Resource: !Sub
-                - 'arn:${AWS::Partition}:s3:::${Bucket}/${Prefix}*'
-                - Bucket: !GetAtt GatewayService.BucketName
-                  Prefix: !GetAtt GatewayService.Prefix
-            - Sid: InvokeTargetLambdas
-              Effect: Allow
-              Action:
-                - lambda:InvokeFunction
-                - lambda:InvokeWithResponseStream
-              Resource:
-                - !GetAtt SteadyFunction.Arn
-                - !GetAtt AdaptiveFunction.Arn
-                - !GetAtt TargetAwareFunction.Arn
-
 Outputs:
   BenchmarkBackendUrl:
     Value: !GetAtt BackendFunctionUrl.FunctionUrl
@@ -443,7 +405,7 @@ Outputs:
     Value: "steady,adaptive,target-aware,standard"
 
   BenchmarkTargetsJson:
-    Value: !Sub '[{"name":"steady","url":"${GatewayFunctionUrl.FunctionUrl}steady"},{"name":"adaptive","url":"${GatewayFunctionUrl.FunctionUrl}adaptive"},{"name":"target-aware","url":"${GatewayFunctionUrl.FunctionUrl}target-aware"},{"name":"standard","url":"https://${DirectHttpApi}.execute-api.${AWS::Region}.amazonaws.com/std"}]'
+    Value: !Sub '[{"name":"steady","url":"${GatewayServiceKhoneFunctionUrl.FunctionUrl}steady"},{"name":"adaptive","url":"${GatewayServiceKhoneFunctionUrl.FunctionUrl}adaptive"},{"name":"target-aware","url":"${GatewayServiceKhoneFunctionUrl.FunctionUrl}target-aware"},{"name":"standard","url":"https://${DirectHttpApi}.execute-api.${AWS::Region}.amazonaws.com/std"}]'
 
   SteadyFunctionArn:
     Value: !GetAtt SteadyFunction.Arn
@@ -458,19 +420,19 @@ Outputs:
     Value: !GetAtt STDFunction.Arn
 
   GatewayFunctionUrl:
-    Value: !GetAtt GatewayFunctionUrl.FunctionUrl
+    Value: !GetAtt GatewayServiceKhoneFunctionUrl.FunctionUrl
 
   GatewayServiceConfigS3Uri:
-    Value: !GetAtt GatewayService.ConfigS3Uri
+    Value: !GetAtt GatewayServiceKhoneConfigPublisher.ConfigS3Uri
 
   SteadyUrl:
-    Value: !Sub "${GatewayFunctionUrl.FunctionUrl}steady"
+    Value: !Sub "${GatewayServiceKhoneFunctionUrl.FunctionUrl}steady"
 
   AdaptiveUrl:
-    Value: !Sub "${GatewayFunctionUrl.FunctionUrl}adaptive"
+    Value: !Sub "${GatewayServiceKhoneFunctionUrl.FunctionUrl}adaptive"
 
   TargetAwareUrl:
-    Value: !Sub "${GatewayFunctionUrl.FunctionUrl}target-aware"
+    Value: !Sub "${GatewayServiceKhoneFunctionUrl.FunctionUrl}target-aware"
 
   StandardUrl:
     Value: !Sub "https://${DirectHttpApi}.execute-api.${AWS::Region}.amazonaws.com/std"

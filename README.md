@@ -72,19 +72,24 @@ caveats, and links to the sanitized reports.
 
 ## Current Deployment Model
 
-- The `KhoneGateway` macro publishes the gateway config/spec artifact to S3.
-- User templates define the gateway as an explicit `AWS::Serverless::Function`.
-- The gateway reads `KHONE_CONFIG_URI` from `!GetAtt <GatewayConfig>.ConfigS3Uri`.
-- SAM `CapacityProviderConfig` attaches an existing LMI capacity provider.
-- `FunctionUrlConfig.InvokeMode: RESPONSE_STREAM` exposes the HTTP interface.
+- The `KhoneGateway` macro expands `Khone::Gateway::Service` into the gateway Lambda,
+  Function URL, execution role, and config publisher.
+- Application stacks still bring an existing LMI capacity provider ARN.
+- The SAR-installed bootstrap stack carries the versioned gateway Lambda zip location.
+- `Khone::Gateway::Service` configures gateway memory, scaling, environment, and route spec.
+- The generated Function URL uses `InvokeMode: RESPONSE_STREAM` and defaults to `AuthType: NONE`.
 
-Deployment resources stay explicit in your SAM template; the macro is only responsible for the
-gateway config artifact.
+The gateway source package no longer needs to be part of each application deployment path.
 
 ## Quick Start
 
 ```bash
-make bootstrap-deploy
+cargo lambda build --release --arm64 --output-format zip -p khone-gateway
+aws s3 cp target/lambda/khone-gateway/bootstrap.zip \
+  "s3://$GATEWAY_ARTIFACT_BUCKET/khone/dev/gateway/bootstrap.zip"
+make bootstrap-deploy \
+  GATEWAY_CODE_S3_BUCKET="$GATEWAY_ARTIFACT_BUCKET" \
+  GATEWAY_CODE_S3_KEY="khone/dev/gateway/bootstrap.zip"
 make examples-sam-deploy GATEWAY_CAPACITY_PROVIDER_ARN=arn:aws:lambda:...
 ```
 
@@ -92,7 +97,9 @@ make examples-sam-deploy GATEWAY_CAPACITY_PROVIDER_ARN=arn:aws:lambda:...
 `EXAMPLE_TEMPLATE` to `adapter-node`, `adapter-rust`, `layer-proxy-node`,
 `layer-proxy-python`, or `native-batch-node` to deploy a specific example.
 
-SAM Rust builds require `cargo-lambda` and `SAM_CLI_BETA_RUST_CARGO_LAMBDA=1`.
+Released SAR bootstrap installs already set the gateway artifact location, so the source-built zip
+step is only needed when deploying the bootstrap stack directly from this checkout. SAM Rust builds
+require `cargo-lambda` and `SAM_CLI_BETA_RUST_CARGO_LAMBDA=1`.
 
 ## Documentation
 

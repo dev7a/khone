@@ -87,7 +87,7 @@ test('report includes workload and deployed Lambda configuration', async () => {
       },
       functions: [
         {
-          logical_id: 'GatewayFunction',
+          logical_id: 'GatewayService',
           function_name: 'test-gateway',
           function_arn: 'arn:aws:lambda:us-east-1:123456789012:function:test-gateway',
           runtime: 'provided.al2023',
@@ -139,7 +139,7 @@ test('report includes workload and deployed Lambda configuration', async () => {
   assert.match(text, /From rps/);
   assert.match(text, /BenchmarkHandlerMemorySize/);
   assert.match(text, /512/);
-  assert.match(text, /GatewayFunction/);
+  assert.match(text, /GatewayService/);
   assert.match(text, /2048 MB/);
   assert.match(text, /1\/4 envs/);
   assert.match(text, /64 conc\/env/);
@@ -224,7 +224,7 @@ test('metrics json redacts infrastructure identifiers from public report data', 
       },
       functions: [
         {
-          logical_id: 'GatewayFunction',
+          logical_id: 'GatewayService',
           function_name: 'test-gateway',
           function_arn: 'arn:aws:lambda:us-east-1:123456789012:function:test-gateway',
           runtime: 'provided.al2023',

@@ -16,6 +16,8 @@ response-streaming Function URL, plus a working `curl` request against a sample 
 - IAM permissions to create IAM roles, Lambda functions, CloudFormation macros, S3 buckets, and
   custom resources.
 - AWS SAM CLI, AWS CLI, Rust, and [`cargo-lambda`](https://www.cargo-lambda.info/).
+- A released SAR bootstrap app, or an S3 bucket where you can upload a source-built
+  `khone-gateway` zip.
 - An existing LMI capacity provider ARN. CloudFormation accepts the
   `arn:aws:lambda:<region>:<account>:capacity-provider:<name>` form; the Makefile also accepts and
   normalizes the `capacity-provider/<name>` form.
@@ -25,8 +27,17 @@ running `sam build` directly.
 
 ## 1. Deploy bootstrap resources
 
+Released bootstrap installs already carry the gateway artifact location. If you are deploying from
+this source checkout, upload a gateway zip and pass its S3 coordinates:
+
 ```bash
-make bootstrap-deploy
+cargo lambda build --release --arm64 --output-format zip -p khone-gateway
+aws s3 cp target/lambda/khone-gateway/bootstrap.zip \
+  "s3://$GATEWAY_ARTIFACT_BUCKET/khone/dev/gateway/bootstrap.zip"
+
+make bootstrap-deploy \
+  GATEWAY_CODE_S3_BUCKET="$GATEWAY_ARTIFACT_BUCKET" \
+  GATEWAY_CODE_S3_KEY="khone/dev/gateway/bootstrap.zip"
 ```
 
 The bootstrap stack is shared per account and region. It creates:
@@ -35,6 +46,7 @@ The bootstrap stack is shared per account and region. It creates:
 - the `Custom::KhoneConfigPublisher` Lambda
 - the `KhoneGateway` CloudFormation macro
 - arm64 and amd64 Mode A runtime API proxy layers
+- versioned gateway Lambda artifact settings
 
 It also exports `KhoneLayerArm64Arn`, `KhoneLayerAmd64Arn`, `KhoneConfigBucketName`, and
 `KhoneConfigPublisherServiceToken`.
@@ -45,8 +57,9 @@ It also exports `KhoneLayerArm64Arn`, `KhoneLayerAmd64Arn`, `KhoneConfigBucketNa
 make examples-sam-deploy GATEWAY_CAPACITY_PROVIDER_ARN=arn:aws:lambda:...
 ```
 
-This builds the gateway and sample target handlers, normalizes the capacity provider ARN if needed,
-and deploys the default `adapter-node` stack named `khone-adapter-node`.
+This builds the sample target handlers, normalizes the capacity provider ARN if needed, and deploys
+the default `adapter-node` stack named `khone-adapter-node`. The gateway Lambda code comes from the
+bootstrap macro's versioned artifact settings.
 
 Choose another example with `EXAMPLE_TEMPLATE`:
 

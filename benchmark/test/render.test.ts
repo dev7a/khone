@@ -172,7 +172,7 @@ test('latency distribution title includes run configuration context', async () =
       },
       functions: [
         {
-          logical_id: 'GatewayFunction',
+          logical_id: 'GatewayService',
           function_name: 'test-gateway',
           function_arn: null,
           runtime: 'provided.al2023',
