@@ -389,6 +389,7 @@ class GatewayMacroTests(unittest.TestCase):
     def test_requires_capacity_provider_gateway_config_and_spec_objects(self) -> None:
         for props, expected in [
             ({"GatewayConfig": {}, "Spec": {"paths": {}}}, "CapacityProviderArn is required"),
+            ({"CapacityProviderArn": "   ", "GatewayConfig": {}, "Spec": {"paths": {}}}, "CapacityProviderArn must not be empty"),
             ({"CapacityProviderArn": "arn", "Spec": {"paths": {}}}, "GatewayConfig is required"),
             ({"CapacityProviderArn": "arn", "GatewayConfig": {}}, "Spec is required"),
             ({"CapacityProviderArn": "arn", "GatewayConfig": [], "Spec": {"paths": {}}}, "GatewayConfig must be an object"),

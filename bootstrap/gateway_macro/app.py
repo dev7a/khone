@@ -368,6 +368,7 @@ def _expand_gateway_service(
         props=props,
         name="CapacityProviderArn",
         required=True,
+        allow_empty=False,
     )
     gateway_config = _validate_object_prop(
         logical_id=logical_id,
