@@ -56,15 +56,20 @@ jobs:
             checkout_ref="refs/tags/$tag"
           fi
 
+          if [[ "$tag" == *$'\n'* || "$tag" == *$'\r'* ]]; then
+            echo "::error::Release tags must not contain newline characters."
+            exit 1
+          fi
+
           if [[ ! "$tag" =~ ^v ]]; then
             echo "::error::Release tags must start with 'v'."
             exit 1
           fi
 
           {
-            echo "tag=$tag"
-            echo "version=${tag#v}"
-            echo "checkout_ref=$checkout_ref"
+            printf 'tag=%s\n' "$tag"
+            printf 'version=%s\n' "${tag#v}"
+            printf 'checkout_ref=%s\n' "$checkout_ref"
           } >> "$GITHUB_OUTPUT"
 
       - name: Check out the release ref
